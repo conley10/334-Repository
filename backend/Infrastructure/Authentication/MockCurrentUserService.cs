@@ -4,12 +4,12 @@ using SmartParking.Domain.Common;
 
 namespace SmartParking.Infrastructure.Authentication;
 
-/// TEMP MOCK: This is a placeholder to allow parallel development.
-/// It will be replaced with a real JWT-based implementation once the Auth feature is complete.
+/// <summary>
+/// Resolves <see cref="ICurrentUserService.UserId"/> from <see cref="HttpContext.User"/> claims
+/// set by <see cref="MockAuthHandler"/> when <c>BYPASS_AUTH=true</c>.
+/// </summary>
 public class MockCurrentUserService : ICurrentUserService
 {
-    private const int DefaultUserId = 2;
-
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public MockCurrentUserService(IHttpContextAccessor httpContextAccessor)
@@ -21,14 +21,16 @@ public class MockCurrentUserService : ICurrentUserService
     {
         get
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(
-                ClaimTypes.NameIdentifier
-            );
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user?.Identity?.IsAuthenticated != true)
+                return null;
 
+            var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdClaim, out var userId))
                 return userId;
 
-            return DefaultUserId;
+            // Authenticated but missing claim — fall back to seeded mock user.
+            return MockAuthDefaults.UserId;
         }
     }
 }

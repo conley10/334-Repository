@@ -47,10 +47,10 @@ if (bypassAuth)
     builder
         .Services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = "Mock";
-            options.DefaultChallengeScheme = "Mock";
+            options.DefaultAuthenticateScheme = MockAuthDefaults.SchemeName;
+            options.DefaultChallengeScheme = MockAuthDefaults.SchemeName;
         })
-        .AddScheme<AuthenticationSchemeOptions, MockAuthHandler>("Mock", null);
+        .AddScheme<AuthenticationSchemeOptions, MockAuthHandler>(MockAuthDefaults.SchemeName, null);
 }
 else
 {
