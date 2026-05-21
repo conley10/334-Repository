@@ -1,38 +1,37 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartParking.Features.Payments.DTOs;
 
 namespace SmartParking.Features.Payments;
 
 [ApiController]
-[Authorize]
-public class PaymentsController : ControllerBase
+[Route("payments")]
+public class PaymentController : ControllerBase
 {
     private readonly PaymentService _paymentService;
 
-    public PaymentsController(PaymentService paymentService)
+    public PaymentController(PaymentService paymentService)
     {
         _paymentService = paymentService;
     }
 
-    [HttpPost("payments")]
-    public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
+    // ---------------- CREATE PAYMENT ----------------
+    [HttpPost]
+    public async Task<ActionResult<PaymentDto>> CreatePayment([FromBody] CreatePaymentRequest request)
     {
-        if (request.Amount <= 0)
-            return BadRequest(new { message = "Amount must be greater than zero" });
-
         var payment = await _paymentService.CreatePaymentAsync(
+            request.BookingID,
             request.Amount,
-            request.Method,
-            request.BookingID
+            request.Method
         );
 
         return Ok(payment);
     }
-}
 
-public class PaymentRequest
-{
-    public double Amount { get; set; }
-    public string Method { get; set; } = string.Empty;
-    public int BookingID { get; set; }
+    // ---------------- GET ALL PAYMENTS ----------------
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetPayments()
+    {
+        var payments = await _paymentService.GetPaymentsAsync();
+        return Ok(payments);
+    }
 }

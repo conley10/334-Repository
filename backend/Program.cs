@@ -27,6 +27,8 @@ builder.Services.AddScoped<IZoneService, ZoneService>();
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<ViolationService>();
+builder.Services.AddScoped<PaymentService>();
+
 
 // -------------------- CORS (DEV ONLY) --------------------
 if (builder.Environment.IsDevelopment())
