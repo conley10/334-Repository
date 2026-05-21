@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dashboard_page.dart';
 import 'payment_page.dart';
 import 'app_state.dart';
 
@@ -27,6 +28,16 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
       appBar: AppBar(
         backgroundColor: lightBackground,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: primaryBlue),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardPage()),
+              (route) => false,
+            );
+          },
+        ),
         title: const Text(
           'Payment Method',
           style: TextStyle(fontWeight: FontWeight.w800, color: primaryBlue),
@@ -87,6 +98,7 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
                       MaterialPageRoute(
                         builder: (context) => PaymentPage(
                           booking: Booking(
+                            bookingID: widget.booking.bookingID,
                             zone: widget.booking.zone,
                             vehicle: widget.booking.vehicle,
                             hours: widget.booking.hours,

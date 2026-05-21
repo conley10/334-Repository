@@ -1,4 +1,5 @@
 class Booking {
+  final int? bookingID;
   final String zone;
   final String vehicle;
   final int hours;
@@ -7,6 +8,7 @@ class Booking {
   final DateTime paidAt;
 
   const Booking({
+    this.bookingID,
     required this.zone,
     required this.vehicle,
     required this.hours,

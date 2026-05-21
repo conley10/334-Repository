@@ -20,7 +20,7 @@ class ApiClient {
     String? baseUrl,
   })  : _httpClient = httpClient ?? http.Client(),
         _storage = storage ?? const FlutterSecureStorage(),
-        baseUrl = baseUrl ?? 'https://api.campuspark.edu.au/v1';
+        baseUrl = baseUrl ?? 'http://localhost:5000';
 
   final http.Client _httpClient;
   final FlutterSecureStorage _storage;
