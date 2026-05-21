@@ -176,6 +176,7 @@ class _BookingsPageState extends State<BookingsPage> {
                       fontWeight: FontWeight.w800,
                       color: primaryBlue,
                     ),
+<<<<<<< HEAD
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -201,6 +202,173 @@ class _BookingsPageState extends State<BookingsPage> {
                         backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
+=======
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Reserve a campus parking spot before you arrive.',
+                      style: TextStyle(
+                        color: mutedText,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    _SectionCard(
+                      title: 'Parking Zone',
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedZone,
+                        decoration: _inputDecoration(),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Zone A',
+                            child: Text('Zone A - Main Campus'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Zone B',
+                            child: Text('Zone B - Library'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Zone C',
+                            child: Text('Zone C - Sports Centre'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() => selectedZone = value!);
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _SectionCard(
+                      title: 'Vehicle',
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedVehicle,
+                        decoration: _inputDecoration(),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'ABC 123',
+                            child: Text('ABC 123 - My Car'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'XYZ 789',
+                            child: Text('XYZ 789 - Family Car'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          setState(() => selectedVehicle = value!);
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _SectionCard(
+                      title: 'Duration',
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              _HourButton(
+                                label: '-',
+                                onTap: () {
+                                  if (selectedHours > 1) {
+                                    setState(() => selectedHours--);
+                                  }
+                                },
+                              ),
+                              Expanded(
+                                child: Center(
+                                  child: Text(
+                                    '$selectedHours hours',
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w800,
+                                      color: primaryBlue,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              _HourButton(
+                                label: '+',
+                                onTap: () {
+                                  setState(() => selectedHours++);
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Text(
+                            '\$4.50 per hour',
+                            style: TextStyle(
+                              color: mutedText,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    _SectionCard(
+                      title: 'Booking Summary',
+                      child: Column(
+                        children: [
+                          _SummaryRow(label: 'Zone', value: selectedZone),
+                          _SummaryRow(label: 'Vehicle', value: selectedVehicle),
+                          _SummaryRow(
+                            label: 'Duration',
+                            value: '$selectedHours hours',
+                          ),
+                          const Divider(height: 28),
+                          _SummaryRow(
+                            label: 'Total',
+                            value: '\$${totalPrice.toStringAsFixed(2)}',
+                            isTotal: true,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PaymentMethodsPage(
+                                booking: Booking(
+                                  zone: selectedZone,
+                                  vehicle: selectedVehicle,
+                                  hours: selectedHours,
+                                  rate: hourlyRate,
+                                  paymentMethod: '',
+                                  paidAt: DateTime.now(),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryBlue,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: const Text(
+                          'Confirm Booking',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+>>>>>>> 2140271 (zones)
                         ),
                       ),
                     ),

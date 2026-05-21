@@ -15,6 +15,7 @@ class VehicleService {
   final ApiClient _apiClient;
   final FlutterSecureStorage _storage;
 
+<<<<<<< HEAD
   static const _vehiclesKey = 'registeredVehicles';
 
   /// Set true when `GET/POST /vehicles` is fully implemented on the API.
@@ -38,6 +39,35 @@ class VehicleService {
 
   Future<void> clearRegisteredVehicles() async {
     await _storage.delete(key: _vehiclesKey);
+=======
+  static const bool useRealApi = true;
+
+  Future<List<Vehicle>> getVehicles() async {
+    if (!useRealApi) {
+      return [
+        const Vehicle(
+          vehicleID: 1,
+          licensePlate: 'ABC123',
+          userID: 1,
+        ),
+        const Vehicle(
+          vehicleID: 2,
+          licensePlate: 'XYZ789',
+          userID: 1,
+        ),
+      ];
+    }
+
+    final response = await _apiClient.get('/vehicles');
+
+    if (response is List) {
+      return response
+          .map((item) => Vehicle.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+
+    return <Vehicle>[];
+>>>>>>> 2140271 (zones)
   }
 
   Future<void> registerVehicle({required String licensePlate}) async {

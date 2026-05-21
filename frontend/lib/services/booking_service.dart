@@ -16,6 +16,7 @@ class BookingService {
   final ApiClient _apiClient;
   final FlutterSecureStorage _storage;
 
+<<<<<<< HEAD
   static const _sessionsKey = 'parkingSessionsV2';
   static const bool useRealApi = false;
 
@@ -30,6 +31,28 @@ class BookingService {
             .map((e) => ParkingSession.fromJson(Map<String, dynamic>.from(e as Map)))
             .toList();
       }
+=======
+  static const bool useRealApi = true;
+
+  Future<List<BookingModel>> getBookings({String? status}) async {
+    if (!useRealApi) {
+      return [
+        const BookingModel(
+          bookingID: 1,
+          zone: 'Zone A',
+          vehicle: 'ABC123',
+          hours: 2,
+          rate: 4.5,
+        ),
+        const BookingModel(
+          bookingID: 2,
+          zone: 'Zone B',
+          vehicle: 'XYZ789',
+          hours: 3,
+          rate: 4.5,
+        ),
+      ];
+>>>>>>> 2140271 (zones)
     }
 
     return <ParkingSession>[];

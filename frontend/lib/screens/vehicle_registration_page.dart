@@ -154,7 +154,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
                 const _FieldLabel('State'),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedState,
+                  initialValue: selectedState,
                   decoration: _inputDecoration(
                     hintText: 'Select state',
                     borderColor: borderColor,
@@ -178,7 +178,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
                 const _FieldLabel('Vehicle type'),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
-                  value: selectedVehicleType,
+                  initialValue: selectedVehicleType,
                   decoration: _inputDecoration(
                     hintText: 'Select vehicle type',
                     borderColor: borderColor,

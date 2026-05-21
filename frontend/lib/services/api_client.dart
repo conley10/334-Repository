@@ -29,7 +29,11 @@ class ApiClient {
     String? baseUrl,
   })  : _httpClient = httpClient ?? http.Client(),
         _storage = storage ?? const FlutterSecureStorage(),
+<<<<<<< HEAD
         baseUrl = baseUrl ?? _defaultApiBaseUrl();
+=======
+        baseUrl = baseUrl ?? 'http://10.0.2.2:5000';
+>>>>>>> 2140271 (zones)
 
   final http.Client _httpClient;
   final FlutterSecureStorage _storage;
@@ -120,17 +124,23 @@ class ApiClient {
     await _storage.delete(key: _idTokenKey);
   }
 
-  Future<Map<String, String>> _headers({bool authenticated = true}) async {
+  Future<Map<String, String>> _headers({
+    bool authenticated = true,
+  }) async {
     final headers = <String, String>{
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
 
-    if (authenticated) {
-      final token = await getToken();
-      if (token == null || token.isEmpty) {
-        throw ApiException(401, 'No bearer token found. Please log in first.');
-      }
+    // TEMPORARY DEV MODE
+    // Skip bearer token if backend bypass auth is enabled
+    if (!authenticated) {
+      return headers;
+    }
+
+    final token = await getToken();
+
+    if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
     }
 
@@ -139,9 +149,12 @@ class ApiClient {
 
   Uri _uri(String path, [Map<String, dynamic>? queryParameters]) {
     final cleanPath = path.startsWith('/') ? path : '/$path';
+
     final uri = Uri.parse('$baseUrl$cleanPath');
 
-    if (queryParameters == null || queryParameters.isEmpty) return uri;
+    if (queryParameters == null || queryParameters.isEmpty) {
+      return uri;
+    }
 
     return uri.replace(
       queryParameters: queryParameters.map(
@@ -159,6 +172,7 @@ class ApiClient {
       _uri(path, queryParameters),
       headers: await _headers(authenticated: authenticated),
     );
+
     return _decode(response);
   }
 
@@ -167,6 +181,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     bool authenticated = true,
   }) async {
+<<<<<<< HEAD
     late final http.Response response;
     try {
       response = await _httpClient.post(
@@ -181,6 +196,14 @@ class ApiClient {
         'and ensure it listens on port 5000.',
       );
     }
+=======
+    final response = await _httpClient.post(
+      _uri(path),
+      headers: await _headers(authenticated: authenticated),
+      body: jsonEncode(body ?? <String, dynamic>{}),
+    );
+
+>>>>>>> 2140271 (zones)
     return _decode(response);
   }
 
@@ -194,10 +217,14 @@ class ApiClient {
       headers: await _headers(authenticated: authenticated),
       body: jsonEncode(body ?? <String, dynamic>{}),
     );
+
     return _decode(response);
   }
 
-  Future<void> delete(String path, {bool authenticated = true}) async {
+  Future<void> delete(
+    String path, {
+    bool authenticated = true,
+  }) async {
     final response = await _httpClient.delete(
       _uri(path),
       headers: await _headers(authenticated: authenticated),
@@ -214,21 +241,21 @@ class ApiClient {
     }
 
     if (response.body.isEmpty) return null;
+
     return jsonDecode(response.body);
   }
 
   String _errorMessage(http.Response response) {
     try {
       final decoded = jsonDecode(response.body);
+
       if (decoded is Map<String, dynamic>) {
         return decoded['message']?.toString() ??
             decoded['error']?.toString() ??
             response.reasonPhrase ??
             'Request failed';
       }
-    } catch (_) {
-      // Fall through to generic message.
-    }
+    } catch (_) {}
 
     return response.reasonPhrase ?? 'Request failed';
   }
