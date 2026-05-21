@@ -14,24 +14,49 @@ public class PaymentController : ControllerBase
         _paymentService = paymentService;
     }
 
-    // ---------------- CREATE PAYMENT ----------------
     [HttpPost]
-    public async Task<ActionResult<PaymentDto>> CreatePayment([FromBody] CreatePaymentRequest request)
+    public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequest request)
     {
-        var payment = await _paymentService.CreatePaymentAsync(
+        // 1. Placeholder for JWT authentication
+        bool userAuthenticated = true; // Replace with real JWT later
+
+        if (!userAuthenticated)
+        {
+            return Unauthorized(new
+            {
+                error = "unauthorized",
+                message = "You must be logged in to make a payment"
+            });
+        }
+
+        // 2. Process payment
+        var result = await _paymentService.CreatePaymentAsync(
             request.BookingID,
             request.Amount,
             request.Method
         );
 
-        return Ok(payment);
-    }
+        // 3. 402 Payment Declined
+        if (result.StatusCode == 402)
+        {
+            return StatusCode(402, new
+            {
+                error = "payment_declined",
+                message = result.Error
+            });
+        }
 
-    // ---------------- GET ALL PAYMENTS ----------------
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<PaymentDto>>> GetPayments()
-    {
-        var payments = await _paymentService.GetPaymentsAsync();
-        return Ok(payments);
+        // 4. 400 Bad Request (validation / business rules)
+        if (!result.Success)
+        {
+            return BadRequest(new
+            {
+                error = "payment_error",
+                message = result.Error
+            });
+        }
+
+        // 5. 200 OK
+        return Ok(result.Data);
     }
 }
