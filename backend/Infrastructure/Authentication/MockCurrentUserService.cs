@@ -8,6 +8,8 @@ namespace SmartParking.Infrastructure.Authentication;
 /// It will be replaced with a real JWT-based implementation once the Auth feature is complete.
 public class MockCurrentUserService : ICurrentUserService
 {
+    private const int DefaultUserId = 2;
+
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public MockCurrentUserService(IHttpContextAccessor httpContextAccessor)
@@ -26,7 +28,7 @@ public class MockCurrentUserService : ICurrentUserService
             if (int.TryParse(userIdClaim, out var userId))
                 return userId;
 
-            return MockAuthDefaults.UserId;
+            return DefaultUserId;
         }
     }
 }

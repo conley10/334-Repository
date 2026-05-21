@@ -10,6 +10,11 @@ namespace SmartParking.Infrastructure.Authentication;
 /// Only active when BYPASS_AUTH=true.
 public class MockAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
+    private const int UserId = 2;
+    private const string Name = "John Student";
+    private const string Email = "john@student.edu";
+    private static readonly string[] Roles = ["Admin", "Student", "Staff"];
+
     public MockAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
         ILoggerFactory logger,
@@ -21,12 +26,12 @@ public class MockAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, MockAuthDefaults.UserId.ToString()),
-            new(ClaimTypes.Name, MockAuthDefaults.Name),
-            new(ClaimTypes.Email, MockAuthDefaults.Email),
+            new(ClaimTypes.NameIdentifier, UserId.ToString()),
+            new(ClaimTypes.Name, Name),
+            new(ClaimTypes.Email, Email),
         };
 
-        foreach (var role in MockAuthDefaults.Roles)
+        foreach (var role in Roles)
             claims.Add(new Claim(ClaimTypes.Role, role));
 
         var identity = new ClaimsIdentity(claims, Scheme.Name);
