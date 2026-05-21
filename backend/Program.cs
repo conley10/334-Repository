@@ -3,22 +3,48 @@ using Microsoft.EntityFrameworkCore;
 using SmartParking.Domain.Common;
 using SmartParking.Infrastructure.Authentication;
 using SmartParking.Infrastructure.Data;
+
+// Feature services
 using SmartParking.Features.Zones;
+using SmartParking.Features.Admin;
+using SmartParking.Features.Payments;
+using SmartParking.Features.Violations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// -------------------- DATABASE --------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// -------------------- CONTROLLERS + SWAGGER --------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// -------------------- FEATURE SERVICES --------------------
 builder.Services.AddScoped<IZoneService, ZoneService>();
+builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<ViolationService>();
 
+// -------------------- CORS (DEV ONLY) --------------------
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.SetIsOriginAllowed(static origin =>
+                origin.StartsWith("http://localhost:", StringComparison.OrdinalIgnoreCase) ||
+                origin.StartsWith("http://127.0.0.1:", StringComparison.OrdinalIgnoreCase));
+            policy.AllowAnyHeader();
+            policy.AllowAnyMethod();
+        });
+    });
+}
 
-// --- Master Switch Security ---
+// -------------------- AUTHENTICATION --------------------
 var bypassAuth = builder.Configuration["BYPASS_AUTH"] == "true";
 
 if (bypassAuth)
@@ -30,7 +56,7 @@ if (bypassAuth)
 }
 else
 {
-    // The "Real" JWT config will go here later
+    // Real JWT config goes here later
     // builder.Services.AddScoped<ICurrentUserService, RealCurrentUserService>();
 }
 
@@ -53,7 +79,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
+// -------------------- PIPELINE --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -61,7 +87,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
+
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
