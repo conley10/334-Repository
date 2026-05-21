@@ -56,3 +56,4 @@ appsettings.Development.json
 *.user
 *.userosscache
 *.sln.docuser
+*.env
