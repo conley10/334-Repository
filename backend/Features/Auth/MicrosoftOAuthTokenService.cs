@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 namespace SmartParking.Features.Auth;
@@ -183,82 +182,13 @@ public sealed class MicrosoftOAuthTokenService(HttpClient httpClient, IConfigura
 
         var refreshToken = root.TryGetProperty("refresh_token", out var rt) ? rt.GetString() : null;
 
-        var displayName = DisplayNameFromIdToken(idToken) ?? DisplayNameFromIdToken(accessToken);
-
         return (new TokenResponseDto
         {
             AccessToken = chosen,
             ExpiresIn = expiresIn,
             TokenType = "Bearer",
             RefreshToken = refreshToken,
-            DisplayName = displayName,
-            IdToken = idToken,
         }, null);
-    }
-
-    /// <summary>Reads name claims from a Microsoft id_token JWT payload (no signature validation).</summary>
-    private static string? DisplayNameFromIdToken(string? idToken)
-    {
-        if (string.IsNullOrWhiteSpace(idToken))
-            return null;
-
-        var parts = idToken.Split('.');
-        if (parts.Length < 2)
-            return null;
-
-        try
-        {
-            var payloadJson = Encoding.UTF8.GetString(Base64UrlDecode(parts[1]));
-            using var doc = JsonDocument.Parse(payloadJson);
-            var root = doc.RootElement;
-
-            if (root.TryGetProperty("given_name", out var given) && given.ValueKind == JsonValueKind.String)
-            {
-                var g = given.GetString()?.Trim();
-                if (!string.IsNullOrEmpty(g))
-                    return g;
-            }
-
-            if (root.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
-            {
-                var n = name.GetString()?.Trim();
-                if (!string.IsNullOrEmpty(n))
-                    return n;
-            }
-
-            if (root.TryGetProperty("preferred_username", out var preferred)
-                && preferred.ValueKind == JsonValueKind.String)
-            {
-                var p = preferred.GetString()?.Trim();
-                if (!string.IsNullOrEmpty(p))
-                    return p.Split('@').FirstOrDefault()?.Trim();
-            }
-
-            if (root.TryGetProperty("email", out var email) && email.ValueKind == JsonValueKind.String)
-            {
-                var e = email.GetString()?.Trim();
-                if (!string.IsNullOrEmpty(e))
-                    return e.Split('@').FirstOrDefault()?.Trim();
-            }
-        }
-        catch
-        {
-            return null;
-        }
-
-        return null;
-    }
-
-    private static byte[] Base64UrlDecode(string input)
-    {
-        var padded = input.Replace('-', '+').Replace('_', '/');
-        switch (padded.Length % 4)
-        {
-            case 2: padded += "=="; break;
-            case 3: padded += "="; break;
-        }
-
-        return Convert.FromBase64String(padded);
     }
 
     private static string? TryReadOAuthError(string json)

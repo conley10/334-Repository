@@ -1,4 +1,3 @@
-import '../auth/jwt_claims.dart';
 import 'api_client.dart';
 
 class AuthService {
@@ -98,47 +97,8 @@ class AuthService {
     }
 
     await _apiClient.saveToken(accessToken);
-
-    final idToken = response['idToken']?.toString();
-    if (idToken != null && idToken.isNotEmpty) {
-      await _apiClient.saveIdToken(idToken);
-    }
-
-    await _persistDisplayName(
-      apiName: response['displayName']?.toString(),
-      idToken: idToken,
-      accessToken: accessToken,
-    );
-
     return accessToken;
   }
-
-  /// Fills [displayName] from stored id_token when missing (e.g. old session).
-  Future<void> ensureDisplayName() async {
-    final existing = await _apiClient.getDisplayName();
-    if (existing != null && existing.isNotEmpty) return;
-
-    final idToken = await _apiClient.getIdToken();
-    final accessToken = await _apiClient.getToken();
-    await _persistDisplayName(idToken: idToken, accessToken: accessToken);
-  }
-
-  Future<void> _persistDisplayName({
-    String? apiName,
-    String? idToken,
-    String? accessToken,
-  }) async {
-    final fromApi = apiName?.trim();
-    final name = (fromApi != null && fromApi.isNotEmpty)
-        ? fromApi
-        : displayNameFromJwt(idToken) ?? displayNameFromJwt(accessToken);
-
-    if (name != null && name.isNotEmpty) {
-      await _apiClient.saveDisplayName(name);
-    }
-  }
-
-  Future<String?> getDisplayName() => _apiClient.getDisplayName();
 
   Future<void> logout() {
     return _apiClient.clearToken();

@@ -3,31 +3,9 @@ import 'bookings_page.dart';
 import 'profile_page.dart';
 import 'payment_methods_page.dart';
 import 'app_state.dart';
-import '../services/auth_service.dart';
 
-class DashboardPage extends StatefulWidget {
+class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
-
-  @override
-  State<DashboardPage> createState() => _DashboardPageState();
-}
-
-class _DashboardPageState extends State<DashboardPage> {
-  final _authService = AuthService();
-  String? _displayName;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDisplayName();
-  }
-
-  Future<void> _loadDisplayName() async {
-    await _authService.ensureDisplayName();
-    final name = await _authService.getDisplayName();
-    if (!mounted) return;
-    setState(() => _displayName = name);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +27,9 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    const Row(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 24,
                           backgroundColor: Color(0xFFE8ECFF),
                           child: Icon(
@@ -60,22 +38,22 @@ class _DashboardPageState extends State<DashboardPage> {
                             size: 28,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Hello',
+                              Text(
+                                'Good morning',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: mutedText,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
-                                _displayName ?? 'there',
-                                style: const TextStyle(
+                                'Conle',
+                                style: TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
                                   color: primaryBlue,
@@ -84,7 +62,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             ],
                           ),
                         ),
-                        const Icon(
+                        Icon(
                           Icons.notifications_none,
                           size: 28,
                           color: Colors.black87,

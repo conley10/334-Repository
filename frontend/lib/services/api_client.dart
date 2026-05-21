@@ -38,8 +38,6 @@ class ApiClient {
   static const _tokenKey = 'accessToken';
   static const _refreshTokenKey = 'refreshToken';
   static const _tokenExpiresAtKey = 'tokenExpiresAt';
-  static const _displayNameKey = 'displayName';
-  static const _idTokenKey = 'idToken';
 
   Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
@@ -68,32 +66,10 @@ class ApiClient {
     return DateTime.tryParse(raw)?.toUtc();
   }
 
-  Future<void> saveDisplayName(String name) async {
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return;
-    await _storage.write(key: _displayNameKey, value: trimmed);
-  }
-
-  Future<String?> getDisplayName() {
-    return _storage.read(key: _displayNameKey);
-  }
-
-  Future<void> saveIdToken(String token) async {
-    final trimmed = token.trim();
-    if (trimmed.isEmpty) return;
-    await _storage.write(key: _idTokenKey, value: trimmed);
-  }
-
-  Future<String?> getIdToken() {
-    return _storage.read(key: _idTokenKey);
-  }
-
   Future<void> clearToken() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _refreshTokenKey);
     await _storage.delete(key: _tokenExpiresAtKey);
-    await _storage.delete(key: _displayNameKey);
-    await _storage.delete(key: _idTokenKey);
   }
 
   Future<Map<String, String>> _headers({bool authenticated = true}) async {

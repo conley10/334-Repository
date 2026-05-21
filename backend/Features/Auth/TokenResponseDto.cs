@@ -15,12 +15,4 @@ public sealed class TokenResponseDto
 
     [JsonPropertyName("refreshToken")]
     public string? RefreshToken { get; set; }
-
-    /// <summary>Display name from Microsoft id_token (given_name or name claim).</summary>
-    [JsonPropertyName("displayName")]
-    public string? DisplayName { get; set; }
-
-    /// <summary>Microsoft id_token so the client can read profile claims if needed.</summary>
-    [JsonPropertyName("idToken")]
-    public string? IdToken { get; set; }
 }
