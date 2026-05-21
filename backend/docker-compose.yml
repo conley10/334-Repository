@@ -14,17 +14,20 @@ services:
             timeout: 5s
             retries: 5
 
-    backend:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        container_name: smart_parking_api
-        environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ConnectionStrings__DefaultConnection=Host=db;Database=smart_parking;Username=postgres;Password=password
-            - BYPASS_AUTH=true
-        ports:
-            - "8080:8080"
-        depends_on:
-            db:
-                condition: service_healthy
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: smart_parking_api
+    # Loads MICROSOFT_TENANT_ID / MICROSOFT_CLIENT_ID for POST /auth/token (copy backend/.env.example → backend/.env).
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Database=smart_parking;Username=postgres;Password=password
+      - BYPASS_AUTH=true
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
