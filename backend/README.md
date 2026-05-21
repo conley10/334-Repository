@@ -12,8 +12,8 @@ docker compose up --build -d
 ```
 
 ### Endpoints:
-*   **Base API URL:** `http://localhost:5000`
-*   **Interactive Testing UI (Swagger):** [http://localhost:5000/swagger](http://localhost:5000/swagger)
+*   **Base API URL:** `http://localhost:5001` (port **5001** avoids macOS AirPlay using **5000**)
+*   **Interactive Testing UI (Swagger):** [http://localhost:5001/swagger](http://localhost:5001/swagger)
 *   **Postgres DB:** `localhost:5432` (User: `postgres`, Pass: `password`)
 
 ### Shutdown:
@@ -30,8 +30,8 @@ The database is wiped on every `docker compose down`.
 
 ### Security (Bypass Mode)
 The system currently runs with **BYPASS_AUTH=true**.
-*   All `[Authorize]` attributes are ignored.
-*   **Mock Identity:** You are treated as **UserID: 2** with all roles (**Admin**, **Student**, **Staff**).
+*   **Mock Identity:** Every request is signed in as **John Student (UserID: 2)** with roles **Admin**, **Student**, and **Staff** (no JWT required).
+*   **GET /users/me** returns the seeded profile from the database.
 *   Toggle this in `docker-compose.yml` by setting `BYPASS_AUTH` to `false`.
 
 ## 3. Documentation

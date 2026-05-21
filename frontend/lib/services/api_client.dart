@@ -1,7 +1,16 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+
+/// Default API root: local Docker in debug, production URL in release.
+String defaultApiBaseUrl() {
+  const fromEnv = String.fromEnvironment('API_BASE_URL');
+  if (fromEnv.isNotEmpty) return fromEnv;
+  if (kDebugMode) return 'http://localhost:5001';
+  return 'https://api.campuspark.edu.au/v1';
+}
 
 class ApiException implements Exception {
   final int statusCode;
@@ -20,7 +29,7 @@ class ApiClient {
     String? baseUrl,
   })  : _httpClient = httpClient ?? http.Client(),
         _storage = storage ?? const FlutterSecureStorage(),
-        baseUrl = baseUrl ?? 'https://api.campuspark.edu.au/v1';
+        baseUrl = baseUrl ?? defaultApiBaseUrl();
 
   final http.Client _httpClient;
   final FlutterSecureStorage _storage;
@@ -75,10 +84,19 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     bool authenticated = true,
   }) async {
-    final response = await _httpClient.get(
-      _uri(path, queryParameters),
-      headers: await _headers(authenticated: authenticated),
-    );
+    late final http.Response response;
+    try {
+      response = await _httpClient.get(
+        _uri(path, queryParameters),
+        headers: await _headers(authenticated: authenticated),
+      );
+    } catch (e) {
+      throw ApiException(
+        0,
+        'Cannot reach the API at $baseUrl. Start the backend (docker compose up in backend/) '
+        'and ensure it listens on port 5001.',
+      );
+    }
     return _decode(response);
   }
 
@@ -87,11 +105,20 @@ class ApiClient {
     Map<String, dynamic>? body,
     bool authenticated = true,
   }) async {
-    final response = await _httpClient.post(
-      _uri(path),
-      headers: await _headers(authenticated: authenticated),
-      body: jsonEncode(body ?? <String, dynamic>{}),
-    );
+    late final http.Response response;
+    try {
+      response = await _httpClient.post(
+        _uri(path),
+        headers: await _headers(authenticated: authenticated),
+        body: jsonEncode(body ?? <String, dynamic>{}),
+      );
+    } catch (e) {
+      throw ApiException(
+        0,
+        'Cannot reach the API at $baseUrl. Start the backend (docker compose up in backend/) '
+        'and ensure it listens on port 5001.',
+      );
+    }
     return _decode(response);
   }
 
@@ -100,19 +127,37 @@ class ApiClient {
     Map<String, dynamic>? body,
     bool authenticated = true,
   }) async {
-    final response = await _httpClient.patch(
-      _uri(path),
-      headers: await _headers(authenticated: authenticated),
-      body: jsonEncode(body ?? <String, dynamic>{}),
-    );
+    late final http.Response response;
+    try {
+      response = await _httpClient.patch(
+        _uri(path),
+        headers: await _headers(authenticated: authenticated),
+        body: jsonEncode(body ?? <String, dynamic>{}),
+      );
+    } catch (e) {
+      throw ApiException(
+        0,
+        'Cannot reach the API at $baseUrl. Start the backend (docker compose up in backend/) '
+        'and ensure it listens on port 5001.',
+      );
+    }
     return _decode(response);
   }
 
   Future<void> delete(String path, {bool authenticated = true}) async {
-    final response = await _httpClient.delete(
-      _uri(path),
-      headers: await _headers(authenticated: authenticated),
-    );
+    late final http.Response response;
+    try {
+      response = await _httpClient.delete(
+        _uri(path),
+        headers: await _headers(authenticated: authenticated),
+      );
+    } catch (e) {
+      throw ApiException(
+        0,
+        'Cannot reach the API at $baseUrl. Start the backend (docker compose up in backend/) '
+        'and ensure it listens on port 5001.',
+      );
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw ApiException(response.statusCode, _errorMessage(response));

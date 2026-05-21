@@ -1,12 +1,13 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace SmartParking.Infrastructure.Authentication;
 
-/// A "Fake" Authentication Handler that automatically signs in every request as an Admin.
-/// Only used for development when BYPASS_AUTH=true.
+/// Signs in every request as the seeded John Student (UserID 2) with Admin, Student, and Staff roles.
+/// Only active when BYPASS_AUTH=true.
 public class MockAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public MockAuthHandler(
@@ -18,21 +19,32 @@ public class MockAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Create a fake identity
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, "2"), // John Student's ID
-            new Claim(ClaimTypes.Name, "Demo User"),
-            new Claim(ClaimTypes.Email, "demo@campus.edu"),
-            new Claim(ClaimTypes.Role, "Admin"), // Grant full admin powers for testing
-            new Claim(ClaimTypes.Role, "Student"),
-            new Claim(ClaimTypes.Role, "Staff"),
+            new(ClaimTypes.NameIdentifier, MockAuthDefaults.UserId.ToString()),
+            new(ClaimTypes.Name, MockAuthDefaults.Name),
+            new(ClaimTypes.Email, MockAuthDefaults.Email),
         };
 
-        var identity = new ClaimsIdentity(claims, "Mock");
+        foreach (var role in MockAuthDefaults.Roles)
+            claims.Add(new Claim(ClaimTypes.Role, role));
+
+        var identity = new ClaimsIdentity(claims, Scheme.Name);
         var principal = new ClaimsPrincipal(identity);
-        var ticket = new AuthenticationTicket(principal, "Mock");
+        var ticket = new AuthenticationTicket(principal, Scheme.Name);
 
         return Task.FromResult(AuthenticateResult.Success(ticket));
+    }
+
+    protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = StatusCodes.Status401Unauthorized;
+        return Task.CompletedTask;
+    }
+
+    protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+    {
+        Response.StatusCode = StatusCodes.Status403Forbidden;
+        return Task.CompletedTask;
     }
 }

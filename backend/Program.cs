@@ -16,16 +16,35 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IZoneService, ZoneService>();
+builder.Services.AddHttpContextAccessor();
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.SetIsOriginAllowed(static origin =>
+                origin.StartsWith("http://localhost:", StringComparison.OrdinalIgnoreCase) ||
+                origin.StartsWith("http://127.0.0.1:", StringComparison.OrdinalIgnoreCase));
+            policy.AllowAnyHeader();
+            policy.AllowAnyMethod();
+        });
+    });
+}
 
 // --- Master Switch Security ---
 var bypassAuth = builder.Configuration["BYPASS_AUTH"] == "true";
 
 if (bypassAuth)
 {
-    // Mock Identity & Auth
     builder.Services.AddScoped<ICurrentUserService, MockCurrentUserService>();
-    builder.Services.AddAuthentication("Mock")
+    builder
+        .Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "Mock";
+            options.DefaultChallengeScheme = "Mock";
+        })
         .AddScheme<AuthenticationSchemeOptions, MockAuthHandler>("Mock", null);
 }
 else
@@ -53,7 +72,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -61,7 +79,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors();
+}
+
 app.UseHttpsRedirection();
+
+if (bypassAuth)
+{
+    app.UseAuthentication();
+}
+
 app.UseAuthorization();
 
 app.MapControllers();

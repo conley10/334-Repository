@@ -23,8 +23,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Database=smart_parking;Username=postgres;Password=password
       - BYPASS_AUTH=true
+    # Host 5001: macOS often reserves 5000 for AirPlay Receiver (Control Center).
     ports:
-      - "5000:8080"
+      - "5001:8080"
     depends_on:
       db:
         condition: service_healthy
