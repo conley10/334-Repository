@@ -16,7 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IZoneService, ZoneService>();
-
+builder.Services.AddHttpContextAccessor();
 
 // --- Master Switch Security ---
 var bypassAuth = builder.Configuration["BYPASS_AUTH"] == "true";
@@ -25,7 +25,12 @@ if (bypassAuth)
 {
     // Mock Identity & Auth
     builder.Services.AddScoped<ICurrentUserService, MockCurrentUserService>();
-    builder.Services.AddAuthentication("Mock")
+    builder
+        .Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "Mock";
+            options.DefaultChallengeScheme = "Mock";
+        })
         .AddScheme<AuthenticationSchemeOptions, MockAuthHandler>("Mock", null);
 }
 else
@@ -62,6 +67,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+if (bypassAuth)
+{
+    app.UseAuthentication();
+}
+
 app.UseAuthorization();
 
 app.MapControllers();
