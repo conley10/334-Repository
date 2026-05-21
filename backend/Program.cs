@@ -22,7 +22,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName);
+});
 
 // -------------------- FEATURE SERVICES --------------------
 builder.Services.AddScoped<IZoneService, ZoneService>();
@@ -30,11 +33,11 @@ builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<ViolationService>();
 
-
-// -------------------- CORS (DEV ONLY) --------------------
+// -------------------- AUTH & HTTP CLIENTS --------------------
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<MicrosoftOAuthTokenService>();
 
+// -------------------- CORS (DEV ONLY) --------------------
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddCors(options =>
@@ -56,8 +59,7 @@ var bypassAuth = builder.Configuration["BYPASS_AUTH"] == "true";
 if (bypassAuth)
 {
     builder.Services.AddScoped<ICurrentUserService, MockCurrentUserService>();
-    builder
-        .Services.AddAuthentication(options =>
+    builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = "Mock";
             options.DefaultChallengeScheme = "Mock";
@@ -127,23 +129,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
     app.UseCors();
 }
-
-if (!app.Environment.IsDevelopment())
+else
 {
     app.UseHttpsRedirection();
 }
-
-if (bypassAuth)
-{
-    app.UseAuthentication();
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors();
-}
-
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
