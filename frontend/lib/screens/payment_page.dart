@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
-import '../models/parking_session.dart';
-import '../router/app_router.dart';
-import '../services/booking_service.dart';
 import 'app_state.dart';
-import 'bookings_page.dart';
+import 'profile_page.dart';
 
 class PaymentPage extends StatelessWidget {
   final Booking booking;
@@ -26,7 +21,7 @@ class PaymentPage extends StatelessWidget {
         backgroundColor: lightBackground,
         elevation: 0,
         title: const Text(
-          'Payment',
+          'Checkout',
           style: TextStyle(fontWeight: FontWeight.w800, color: primaryBlue),
         ),
         centerTitle: true,
@@ -48,17 +43,16 @@ class PaymentPage extends StatelessWidget {
                     const Icon(Icons.local_parking, color: primaryBlue, size: 48),
                     const SizedBox(height: 12),
                     Text(
-                      booking.zone,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      '${booking.zone} Parking',
+                      style: TextStyle(
                         color: primaryBlue,
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '${booking.dateText} • ${booking.timeText}',
+                      'Today • ${booking.durationText}',
                       style: const TextStyle(color: Color(0xFF8B8E99)),
                     ),
                   ],
@@ -71,32 +65,18 @@ class PaymentPage extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final start = booking.paidAt.toUtc();
-                    final end = start.add(Duration(hours: booking.hours));
-
-                    await BookingService().addSession(
-                      ParkingSession(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        zoneTitle: booking.zone,
-                        vehiclePlate: booking.vehicle,
-                        driverName: booking.driverName,
-                        startTime: start,
-                        endTime: end,
-                        status: SessionStatus.upcoming,
-                        rate: booking.rate,
-                      ),
-                    );
-
+                  onPressed: () {
                     AppState.addPaidBooking(booking);
-
-                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Payment successful. Booking confirmed.'),
+                        content: Text('Payment successful. Booking added to profile.'),
                       ),
                     );
-                    context.go(AppRoutes.bookings);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfilePage()),
+                      (route) => false,
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryBlue,
@@ -108,7 +88,7 @@ class PaymentPage extends StatelessWidget {
                   ),
                   child: Text(
                     'Pay ${booking.totalText}',
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
               ),
@@ -135,8 +115,6 @@ class _SummaryCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          if (booking.driverName.isNotEmpty)
-            _Row(label: 'Driver', value: booking.driverName),
           _Row(label: 'Parking zone', value: booking.zone),
           _Row(label: 'Vehicle', value: booking.vehicle),
           _Row(label: 'Duration', value: booking.durationText),

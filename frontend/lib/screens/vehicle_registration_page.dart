@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
-import '../router/app_router.dart';
+import 'dashboard_page.dart';
 import '../services/vehicle_service.dart';
 
 class VehicleRegistrationPage extends StatefulWidget {
@@ -21,6 +19,9 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
   String? selectedVehicleType = 'Sedan';
 
   bool _isLoading = false;
+
+  // Keep this false until backend URL/auth is ready.
+  static const bool useRealApi = false;
 
   @override
   void dispose() {
@@ -42,17 +43,30 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
     setState(() => _isLoading = true);
 
     try {
-      await _vehicleService.registerVehicle(licensePlate: plate);
+      if (useRealApi) {
+        await _vehicleService.registerVehicle(licensePlate: plate);
+      } else {
+        await Future.delayed(const Duration(milliseconds: 600));
+      }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Vehicle $plate saved.'),
+          content: Text(
+            useRealApi
+                ? 'Vehicle saved to backend.'
+                : 'Demo vehicle saved.',
+          ),
         ),
       );
 
-      context.go(AppRoutes.dashboard);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DashboardPage(),
+        ),
+      );
     } catch (error) {
       if (!mounted) return;
 
@@ -82,13 +96,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go(AppRoutes.login);
-            }
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Vehicle Registration',

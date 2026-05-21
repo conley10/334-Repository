@@ -23,10 +23,4 @@ public sealed class TokenResponseDto
     /// <summary>Microsoft id_token so the client can read profile claims if needed.</summary>
     [JsonPropertyName("idToken")]
     public string? IdToken { get; set; }
-
-    [JsonPropertyName("fullName")]
-    public string? FullName { get; set; }
-
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
 }

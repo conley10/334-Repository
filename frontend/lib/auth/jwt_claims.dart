@@ -26,42 +26,6 @@ String? displayNameFromJwt(String? jwt) {
   return null;
 }
 
-/// Full name from `name` claim (for profile header).
-String? fullNameFromJwt(String? jwt) {
-  final claims = jwtPayload(jwt);
-  if (claims == null) return null;
-
-  final name = _stringClaim(claims, 'name');
-  if (name != null) return name;
-
-  final given = _stringClaim(claims, 'given_name');
-  final family = _stringClaim(claims, 'family_name');
-  if (given != null && family != null) return '$given $family';
-  if (given != null) return given;
-
-  return displayNameFromJwt(jwt);
-}
-
-/// Microsoft sign-in email from `email` or `preferred_username`.
-String? emailFromJwt(String? jwt) {
-  final claims = jwtPayload(jwt);
-  if (claims == null) return null;
-
-  final email = _stringClaim(claims, 'email');
-  if (email != null && email.contains('@')) return email;
-
-  final preferred = _stringClaim(claims, 'preferred_username');
-  if (preferred != null && preferred.contains('@')) return preferred;
-
-  final upn = _stringClaim(claims, 'upn');
-  if (upn != null && upn.contains('@')) return upn;
-
-  final unique = _stringClaim(claims, 'unique_name');
-  if (unique != null && unique.contains('@')) return unique;
-
-  return null;
-}
-
 Map<String, dynamic>? jwtPayload(String? jwt) {
   if (jwt == null || jwt.isEmpty) return null;
   final parts = jwt.split('.');

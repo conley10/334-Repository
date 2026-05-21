@@ -39,8 +39,6 @@ class ApiClient {
   static const _refreshTokenKey = 'refreshToken';
   static const _tokenExpiresAtKey = 'tokenExpiresAt';
   static const _displayNameKey = 'displayName';
-  static const _fullNameKey = 'fullName';
-  static const _userEmailKey = 'userEmail';
   static const _idTokenKey = 'idToken';
 
   Future<void> saveToken(String token) async {
@@ -80,26 +78,6 @@ class ApiClient {
     return _storage.read(key: _displayNameKey);
   }
 
-  Future<void> saveFullName(String name) async {
-    final trimmed = name.trim();
-    if (trimmed.isEmpty) return;
-    await _storage.write(key: _fullNameKey, value: trimmed);
-  }
-
-  Future<String?> getFullName() {
-    return _storage.read(key: _fullNameKey);
-  }
-
-  Future<void> saveUserEmail(String email) async {
-    final trimmed = email.trim();
-    if (trimmed.isEmpty) return;
-    await _storage.write(key: _userEmailKey, value: trimmed);
-  }
-
-  Future<String?> getUserEmail() {
-    return _storage.read(key: _userEmailKey);
-  }
-
   Future<void> saveIdToken(String token) async {
     final trimmed = token.trim();
     if (trimmed.isEmpty) return;
@@ -115,8 +93,6 @@ class ApiClient {
     await _storage.delete(key: _refreshTokenKey);
     await _storage.delete(key: _tokenExpiresAtKey);
     await _storage.delete(key: _displayNameKey);
-    await _storage.delete(key: _fullNameKey);
-    await _storage.delete(key: _userEmailKey);
     await _storage.delete(key: _idTokenKey);
   }
 

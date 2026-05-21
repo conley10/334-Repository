@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'app_keys.dart';
 import 'env_parse.dart';
-import 'router/app_router.dart';
+import 'screens/login_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  usePathUrlStrategy();
   try {
     final raw = normalizeEnvText(await rootBundle.loadString('.env'));
     final parsed = parseDotEnvManual(raw);
@@ -36,7 +34,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return MaterialApp(
       scaffoldMessengerKey: appScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       title: 'CampusPark',
@@ -44,7 +42,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Arial',
       ),
-      routerConfig: appRouter,
+      home: const LoginPage(),
     );
   }
 }

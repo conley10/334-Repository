@@ -183,7 +183,7 @@ public sealed class MicrosoftOAuthTokenService(HttpClient httpClient, IConfigura
 
         var refreshToken = root.TryGetProperty("refresh_token", out var rt) ? rt.GetString() : null;
 
-        var profile = ReadProfileFromIdToken(idToken) ?? ReadProfileFromIdToken(accessToken);
+        var displayName = DisplayNameFromIdToken(idToken) ?? DisplayNameFromIdToken(accessToken);
 
         return (new TokenResponseDto
         {
@@ -191,22 +191,18 @@ public sealed class MicrosoftOAuthTokenService(HttpClient httpClient, IConfigura
             ExpiresIn = expiresIn,
             TokenType = "Bearer",
             RefreshToken = refreshToken,
-            DisplayName = profile?.DisplayName,
-            FullName = profile?.FullName,
-            Email = profile?.Email,
+            DisplayName = displayName,
             IdToken = idToken,
         }, null);
     }
 
-    private sealed record TokenProfile(string? DisplayName, string? FullName, string? Email);
-
-    /// <summary>Reads profile claims from a Microsoft JWT payload (no signature validation).</summary>
-    private static TokenProfile? ReadProfileFromIdToken(string? jwt)
+    /// <summary>Reads name claims from a Microsoft id_token JWT payload (no signature validation).</summary>
+    private static string? DisplayNameFromIdToken(string? idToken)
     {
-        if (string.IsNullOrWhiteSpace(jwt))
+        if (string.IsNullOrWhiteSpace(idToken))
             return null;
 
-        var parts = jwt.Split('.');
+        var parts = idToken.Split('.');
         if (parts.Length < 2)
             return null;
 
@@ -216,54 +212,41 @@ public sealed class MicrosoftOAuthTokenService(HttpClient httpClient, IConfigura
             using var doc = JsonDocument.Parse(payloadJson);
             var root = doc.RootElement;
 
-            string? given = null;
-            if (root.TryGetProperty("given_name", out var givenEl) && givenEl.ValueKind == JsonValueKind.String)
-                given = givenEl.GetString()?.Trim();
-
-            string? family = null;
-            if (root.TryGetProperty("family_name", out var familyEl) && familyEl.ValueKind == JsonValueKind.String)
-                family = familyEl.GetString()?.Trim();
-
-            string? fullName = null;
-            if (root.TryGetProperty("name", out var nameEl) && nameEl.ValueKind == JsonValueKind.String)
-                fullName = nameEl.GetString()?.Trim();
-
-            if (string.IsNullOrEmpty(fullName) && !string.IsNullOrEmpty(given))
-                fullName = string.IsNullOrEmpty(family) ? given : $"{given} {family}";
-
-            var displayName = !string.IsNullOrEmpty(given) ? given : fullName;
-
-            string? email = null;
-            if (root.TryGetProperty("email", out var emailEl) && emailEl.ValueKind == JsonValueKind.String)
-                email = emailEl.GetString()?.Trim();
-
-            if (string.IsNullOrEmpty(email)
-                && root.TryGetProperty("preferred_username", out var preferredEl)
-                && preferredEl.ValueKind == JsonValueKind.String)
+            if (root.TryGetProperty("given_name", out var given) && given.ValueKind == JsonValueKind.String)
             {
-                var preferred = preferredEl.GetString()?.Trim();
-                if (!string.IsNullOrEmpty(preferred) && preferred.Contains('@'))
-                    email = preferred;
+                var g = given.GetString()?.Trim();
+                if (!string.IsNullOrEmpty(g))
+                    return g;
             }
 
-            if (string.IsNullOrEmpty(email)
-                && root.TryGetProperty("upn", out var upnEl)
-                && upnEl.ValueKind == JsonValueKind.String)
+            if (root.TryGetProperty("name", out var name) && name.ValueKind == JsonValueKind.String)
             {
-                var upn = upnEl.GetString()?.Trim();
-                if (!string.IsNullOrEmpty(upn) && upn.Contains('@'))
-                    email = upn;
+                var n = name.GetString()?.Trim();
+                if (!string.IsNullOrEmpty(n))
+                    return n;
             }
 
-            if (string.IsNullOrEmpty(displayName) && string.IsNullOrEmpty(fullName) && string.IsNullOrEmpty(email))
-                return null;
+            if (root.TryGetProperty("preferred_username", out var preferred)
+                && preferred.ValueKind == JsonValueKind.String)
+            {
+                var p = preferred.GetString()?.Trim();
+                if (!string.IsNullOrEmpty(p))
+                    return p.Split('@').FirstOrDefault()?.Trim();
+            }
 
-            return new TokenProfile(displayName, fullName, email);
+            if (root.TryGetProperty("email", out var email) && email.ValueKind == JsonValueKind.String)
+            {
+                var e = email.GetString()?.Trim();
+                if (!string.IsNullOrEmpty(e))
+                    return e.Split('@').FirstOrDefault()?.Trim();
+            }
         }
         catch
         {
             return null;
         }
+
+        return null;
     }
 
     private static byte[] Base64UrlDecode(string input)

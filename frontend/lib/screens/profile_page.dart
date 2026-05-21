@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
-import '../router/app_router.dart';
-import '../widgets/main_bottom_nav.dart';
+import 'dashboard_page.dart';
+import 'bookings_page.dart';
+import 'payment_methods_page.dart';
 import 'app_state.dart';
 import '../services/vehicle_service.dart';
 import '../models/vehicle.dart';
 import '../services/user_service.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -120,10 +120,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                         ),
                                       ),
                                       const SizedBox(height: 4),
+                                      const Text(
+                                        'Student ID: S1234567',
+                                        style:
+                                            TextStyle(color: Colors.white70),
+                                      ),
+                                      const SizedBox(height: 4),
                                       Text(
-                                        currentUser?.email.isNotEmpty == true
-                                            ? currentUser!.email
-                                            : 'Microsoft account',
+                                        currentUser?.email ?? '',
                                         style: const TextStyle(
                                           color: Colors.white70,
                                         ),
@@ -141,16 +145,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       title: 'Account Information',
                       children: [
                         _InfoRow(
-                          label: 'Name',
-                          value: currentUser?.name ?? '',
+                          label: 'Role',
+                          value: currentUser?.role ?? '',
                         ),
-                        _InfoRow(
-                          label: 'Email',
-                          value: currentUser?.email ?? '',
+                        const _InfoRow(
+                          label: 'Campus',
+                          value: 'Main Campus',
                         ),
-                        _InfoRow(
-                          label: 'Sign-in',
-                          value: currentUser?.role ?? 'Microsoft account',
+                        const _InfoRow(
+                          label: 'Department',
+                          value: 'Information Technology',
                         ),
                       ],
                     ),
@@ -219,7 +223,11 @@ class _ProfilePageState extends State<ProfilePage> {
                         onPressed: () async {
                           await _authService.logout();
                           if (!context.mounted) return;
-                          context.go(AppRoutes.login);
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginPage()),
+                            (_) => false,
+                          );
                         },
                         icon: const Icon(Icons.logout),
                         label: const Text('Log Out'),
@@ -236,7 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ),
             ),
-            const MainBottomNav(),
+            const _BottomNavBar(currentIndex: 3),
           ],
         ),
       ),
@@ -433,6 +441,78 @@ class _BookingCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _BottomNavBar extends StatelessWidget {
+  final int currentIndex;
+
+  const _BottomNavBar({required this.currentIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return NavigationBar(
+      selectedIndex: currentIndex,
+      backgroundColor: Colors.white,
+      indicatorColor: const Color(0xFFE8ECFF),
+      onDestinationSelected: (index) {
+        if (index == currentIndex) return;
+
+        if (index == 0) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DashboardPage()),
+          );
+        }
+
+        if (index == 1) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const BookingsPage()),
+          );
+        }
+
+        if (index == 2) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PaymentMethodsPage(
+                booking: Booking(
+                  zone: 'Zone A',
+                  vehicle: 'ABC 123',
+                  hours: 2,
+                  rate: 4.50,
+                  paymentMethod: '',
+                  paidAt: DateTime.now(),
+                ),
+              ),
+            ),
+          );
+        }
+      },
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.home_outlined),
+          selectedIcon: Icon(Icons.home),
+          label: 'Home',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.calendar_today_outlined),
+          selectedIcon: Icon(Icons.calendar_today),
+          label: 'Bookings',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.credit_card_outlined),
+          selectedIcon: Icon(Icons.credit_card),
+          label: 'Payments',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.person_outline),
+          selectedIcon: Icon(Icons.person),
+          label: 'Profile',
+        ),
+      ],
     );
   }
 }

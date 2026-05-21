@@ -1,35 +1,27 @@
-import 'auth_service.dart';
+import 'api_client.dart';
 import '../models/user.dart';
 
 class UserService {
-  UserService({AuthService? authService}) : _authService = authService ?? AuthService();
+  UserService({ApiClient? apiClient})
+      : _apiClient = apiClient ?? ApiClient();
 
-  final AuthService _authService;
-
-  static const bool useRealApi = false;
+  final ApiClient _apiClient;
 
   Future<User> getCurrentUser() async {
-    await _authService.ensureMicrosoftProfile();
 
-    final name = await _authService.getFullName() ?? '';
-    final email = await _authService.getEmail() ?? '';
-
-    if (!useRealApi) {
-      return User(
-        name: name.isNotEmpty ? name : 'Signed in',
-        email: email.isNotEmpty ? email : 'No email on Microsoft profile',
-        role: 'Microsoft account',
-      );
-    }
-
-    // REAL API MODE later
-    // final response = await _apiClient.get('/users/me');
-    // return User.fromJson(response);
-
-    return User(
-      name: name.isNotEmpty ? name : 'Signed in',
-      email: email.isNotEmpty ? email : '',
-      role: 'Microsoft account',
+    // DEMO MODE until backend exists
+    return const User(
+      userID: 1,
+      name: 'TEST USER',
+      email: 'conle@student.edu.au',
+      role: 'Admin',
     );
+
+    /*
+    // REAL API MODE later
+    final response = await _apiClient.get('/users/me');
+
+    return User.fromJson(response);
+    */
   }
 }

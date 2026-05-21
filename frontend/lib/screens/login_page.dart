@@ -7,8 +7,8 @@ import '../app_keys.dart';
 import '../auth/microsoft_oauth.dart';
 import '../auth/microsoft_oauth_config.dart';
 import '../services/api_client.dart';
-import '../navigation/post_auth_navigation.dart';
 import '../services/auth_service.dart';
+import 'vehicle_registration_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -122,7 +122,12 @@ class _LoginPageState extends State<LoginPage> {
     return origin.endsWith('/') ? origin : '$origin/';
   }
 
-  Future<void> _goToHome() => navigateAfterSignIn(context);
+  Future<void> _goToHome() {
+    return Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const VehicleRegistrationPage()),
+    );
+  }
 
   Future<void> _continueWithMicrosoft() async {
     if (!kIsWeb) {
@@ -135,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       if (await _authService.tryRestoreSession()) {
         if (!mounted) return;
-        await _authService.ensureMicrosoftProfile();
+        await _authService.ensureDisplayName();
         if (!mounted) return;
         await _goToHome();
         return;

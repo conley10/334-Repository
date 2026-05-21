@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
-import '../router/app_router.dart';
+import 'payment_page.dart';
 import 'app_state.dart';
 
 class PaymentMethodsPage extends StatefulWidget {
@@ -84,16 +82,19 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    context.push(
-                      AppRoutes.paymentCheckout,
-                      extra: Booking(
-                        zone: widget.booking.zone,
-                        vehicle: widget.booking.vehicle,
-                        hours: widget.booking.hours,
-                        rate: widget.booking.rate,
-                        paymentMethod: selectedMethod,
-                        paidAt: DateTime.now(),
-                        driverName: widget.booking.driverName,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentPage(
+                          booking: Booking(
+                            zone: widget.booking.zone,
+                            vehicle: widget.booking.vehicle,
+                            hours: widget.booking.hours,
+                            rate: widget.booking.rate,
+                            paymentMethod: selectedMethod,
+                            paidAt: DateTime.now(),
+                          ),
+                        ),
                       ),
                     );
                   },

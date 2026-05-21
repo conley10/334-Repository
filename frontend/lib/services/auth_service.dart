@@ -1,7 +1,5 @@
 import '../auth/jwt_claims.dart';
 import 'api_client.dart';
-import 'booking_service.dart';
-import 'vehicle_service.dart';
 
 class AuthService {
   AuthService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
@@ -106,10 +104,8 @@ class AuthService {
       await _apiClient.saveIdToken(idToken);
     }
 
-    await _persistMicrosoftProfile(
-      apiDisplayName: response['displayName']?.toString(),
-      apiFullName: response['fullName']?.toString(),
-      apiEmail: response['email']?.toString(),
+    await _persistDisplayName(
+      apiName: response['displayName']?.toString(),
       idToken: idToken,
       accessToken: accessToken,
     );
@@ -117,81 +113,35 @@ class AuthService {
     return accessToken;
   }
 
-  /// Fills stored Microsoft profile from id_token when missing (e.g. old session).
-  Future<void> ensureMicrosoftProfile() async {
-    final hasName = (await _apiClient.getFullName())?.isNotEmpty == true
-        || (await _apiClient.getDisplayName())?.isNotEmpty == true;
-    final hasEmail = (await _apiClient.getUserEmail())?.isNotEmpty == true;
-    if (hasName && hasEmail) return;
+  /// Fills [displayName] from stored id_token when missing (e.g. old session).
+  Future<void> ensureDisplayName() async {
+    final existing = await _apiClient.getDisplayName();
+    if (existing != null && existing.isNotEmpty) return;
 
     final idToken = await _apiClient.getIdToken();
     final accessToken = await _apiClient.getToken();
-    await _persistMicrosoftProfile(idToken: idToken, accessToken: accessToken);
+    await _persistDisplayName(idToken: idToken, accessToken: accessToken);
   }
 
-  @Deprecated('Use ensureMicrosoftProfile')
-  Future<void> ensureDisplayName() => ensureMicrosoftProfile();
-
-  Future<void> _persistMicrosoftProfile({
-    String? apiDisplayName,
-    String? apiFullName,
-    String? apiEmail,
+  Future<void> _persistDisplayName({
+    String? apiName,
     String? idToken,
     String? accessToken,
   }) async {
-    final displayName = _firstNonEmpty([
-      apiDisplayName,
-      displayNameFromJwt(idToken),
-      displayNameFromJwt(accessToken),
-    ]);
+    final fromApi = apiName?.trim();
+    final name = (fromApi != null && fromApi.isNotEmpty)
+        ? fromApi
+        : displayNameFromJwt(idToken) ?? displayNameFromJwt(accessToken);
 
-    final fullName = _firstNonEmpty([
-      apiFullName,
-      fullNameFromJwt(idToken),
-      fullNameFromJwt(accessToken),
-      displayName,
-    ]);
-
-    final email = _firstNonEmpty([
-      apiEmail,
-      emailFromJwt(idToken),
-      emailFromJwt(accessToken),
-    ]);
-
-    if (displayName != null) await _apiClient.saveDisplayName(displayName);
-    if (fullName != null) await _apiClient.saveFullName(fullName);
-    if (email != null) await _apiClient.saveUserEmail(email);
-  }
-
-  String? _firstNonEmpty(List<String?> values) {
-    for (final value in values) {
-      final trimmed = value?.trim();
-      if (trimmed != null && trimmed.isNotEmpty) return trimmed;
+    if (name != null && name.isNotEmpty) {
+      await _apiClient.saveDisplayName(name);
     }
-    return null;
   }
 
-  Future<String?> getDisplayName() async {
-    await ensureMicrosoftProfile();
-    return _apiClient.getDisplayName();
-  }
+  Future<String?> getDisplayName() => _apiClient.getDisplayName();
 
-  Future<String?> getFullName() async {
-    await ensureMicrosoftProfile();
-    final full = await _apiClient.getFullName();
-    if (full != null && full.isNotEmpty) return full;
-    return _apiClient.getDisplayName();
-  }
-
-  Future<String?> getEmail() async {
-    await ensureMicrosoftProfile();
-    return _apiClient.getUserEmail();
-  }
-
-  Future<void> logout() async {
-    await _apiClient.clearToken();
-    await VehicleService().clearRegisteredVehicles();
-    await BookingService().clearSessions();
+  Future<void> logout() {
+    return _apiClient.clearToken();
   }
 
   Future<bool> isLoggedIn() async {
