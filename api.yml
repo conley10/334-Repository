@@ -823,21 +823,18 @@ components:
 
     TokenExchangeRequest:
       type: object
-      required: [provider, code, codeVerifier, redirectUri]
+      required: [provider, code, codeVerifier]
       properties:
         provider:
           type: string
-          enum: [microsoft]
-          description: The OAuth provider used (Microsoft Entra ID only).
+          enum: [google, microsoft]
+          description: The OAuth provider used.
         code:
           type: string
           description: The authorisation code returned by the provider.
         codeVerifier:
           type: string
           description: The PKCE code verifier string.
-        redirectUri:
-          type: string
-          description: Exact redirect URI used in the Microsoft authorise step (must match Entra app registration).
 
     TokenResponse:
       type: object

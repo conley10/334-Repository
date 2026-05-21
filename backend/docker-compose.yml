@@ -19,14 +19,10 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: smart_parking_api
-    # Run `docker compose` from the backend folder so ../frontend/.env resolves.
-    env_file:
-      - ../frontend/.env
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Database=smart_parking;Username=postgres;Password=password
       - BYPASS_AUTH=true
-      # MICROSOFT_* keys come from env_file (../frontend/.env) above.
     ports:
       - "5000:8080"
     depends_on:

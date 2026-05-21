@@ -32,8 +32,6 @@ frontend/.pub-cache/
 frontend/.pub/
 /frontend/build/
 /frontend/coverage/
-/frontend/.env
-/backend/.env
 
 # Symbolication related
 app.*.symbols

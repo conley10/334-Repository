@@ -81,7 +81,7 @@ class _BookingsPageState extends State<BookingsPage> {
                     _SectionCard(
                       title: 'Parking Zone',
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedZone,
+                        value: selectedZone,
                         decoration: _inputDecoration(),
                         items: const [
                           DropdownMenuItem(
@@ -108,7 +108,7 @@ class _BookingsPageState extends State<BookingsPage> {
                     _SectionCard(
                       title: 'Vehicle',
                       child: DropdownButtonFormField<String>(
-                        initialValue: selectedVehicle,
+                        value: selectedVehicle,
                         decoration: _inputDecoration(),
                         items: const [
                           DropdownMenuItem(

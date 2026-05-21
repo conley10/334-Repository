@@ -47,15 +47,3 @@ public class BookingsService
 While we are developing, we use a "Master Switch" called **BYPASS_AUTH** in the Docker settings.
 *   **Always On:** When this is true, the app pretends everyone is a "Super User" (UserID: 2) with **all roles** enabled (Admin, Student, and Staff).
 *   **Why?** This lets you test your code immediately without needing a real login token.
-
-## 4. Microsoft sign-in (Entra ID / Azure AD)
-
-The Flutter web app starts a **PKCE** OAuth flow against Microsoft, then sends the returned `code` plus `code_verifier` and `redirectUri` to **`POST /auth/token`**. The backend exchanges that code at Microsoft’s token endpoint and returns an `accessToken` (Microsoft access token, or `id_token` if no access token is returned).
-
-**What you need:**
-
-1. An Entra **App registration** with a **SPA** redirect URI that matches the Flutter URL (for example `http://localhost:8080/` when you run with `--web-port=8080`).
-2. Backend configuration: `MicrosoftAuth:TenantId`, `MicrosoftAuth:ClientId`, and optionally `MicrosoftAuth:ClientSecret` (only for confidential “Web” apps).
-3. Flutter: put the same IDs in **`frontend/.env`** as `MICROSOFT_TENANT_ID` and `MICROSOFT_CLIENT_ID`, **or** pass `--dart-define=...` when you run (defines override `.env`).
-
-See the backend **README** section *Microsoft sign-in* for the exact `flutter run` command.
