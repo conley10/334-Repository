@@ -1,30 +1,33 @@
 services:
-  db:
-    image: postgres:17-alpine
-    container_name: smart_parking_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: smart_parking
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d smart_parking"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    db:
+        image: postgres:17-alpine
+        container_name: smart_parking_db
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: smart_parking
+        ports:
+            - "5432:5432"
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d smart_parking"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
 
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: smart_parking_api
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db;Database=smart_parking;Username=postgres;Password=password
-      - BYPASS_AUTH=true
-    ports:
-      - "5000:8080"
-    depends_on:
-      db:
-        condition: service_healthy
+    backend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: smart_parking_api
+        # Loads MICROSOFT_TENANT_ID / MICROSOFT_CLIENT_ID for POST /auth/token (copy backend/.env.example -> backend/.env).
+        env_file:
+            - .env
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__DefaultConnection=Host=db;Database=smart_parking;Username=postgres;Password=password
+            - BYPASS_AUTH=true
+        ports:
+            - "8080:8080"
+        depends_on:
+            db:
+                condition: service_healthy
