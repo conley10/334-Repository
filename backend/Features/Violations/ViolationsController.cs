@@ -4,9 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 namespace SmartParking.Features.Violations;
 
 [ApiController]
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class ViolationsController : ControllerBase
 {
+    private readonly ViolationService _violationService;
+
+    public ViolationsController(ViolationService violationService)
+    {
+        _violationService = violationService;
+    }
+
     [HttpGet("violations")]
-    public IActionResult GetViolations() => Ok();
+    public async Task<IActionResult> GetViolations()
+    {
+        var violations = await _violationService.GetAllViolationsAsync();
+        return Ok(violations);
+    }
 }
