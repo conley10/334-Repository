@@ -6,7 +6,7 @@ class BookingService {
 
   final ApiClient _apiClient;
 
-  static const bool useRealApi = false;
+  static const bool useRealApi = true;
 
   Future<List<BookingModel>> getBookings({String? status}) async {
     if (!useRealApi) {

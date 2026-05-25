@@ -6,7 +6,7 @@ class VehicleService {
 
   final ApiClient _apiClient;
 
-  static const bool useRealApi = false;
+  static const bool useRealApi = true;
 
   Future<List<Vehicle>> getVehicles() async {
     // DEMO MODE until backend exists
