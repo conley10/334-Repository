@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/login_page.dart';
-import 'widgets/responsive_guard.dart';
-import 'screens/admin/admin_demo_page.dart';
+import 'screens/admin/admin_home_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +17,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: 'Arial',
       ),
-      home: const ResponsiveGuard(child: AdminDemoPage()),
+      home: const AdminHomePage(),
     );
   }
 }
