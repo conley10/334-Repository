@@ -8,6 +8,8 @@ public record ZoneDto(
     int MaxDuration,
     string AccessLevel,
     string ZoneType,
+    string Status,
+    int AvailableSpots,
     object GeoJson
 );
 

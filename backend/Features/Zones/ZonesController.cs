@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmartParking.Domain.Enums;
 using SmartParking.Infrastructure.Data;
 
 namespace SmartParking.Features.Zones;
@@ -32,6 +33,8 @@ public class ZonesController : ControllerBase
                 z.MaxDuration,
                 z.AccessLevel.ToString().ToLower(),
                 z.ZoneType.ToString().ToLower(),
+                z.Status.ToString().ToLower(),
+                z.Spots.Count(s => s.Status == SpotStatus.Available),
                 JsonSerializer.Deserialize<object>(z.GeoJson, (JsonSerializerOptions?)null)
                     ?? new { }
             ))
@@ -108,6 +111,8 @@ public class ZonesController : ControllerBase
             z.MaxDuration,
             z.AccessLevel.ToString().ToLower(),
             z.ZoneType.ToString().ToLower(),
+            z.Status.ToString().ToLower(),
+            z.Spots.Count(s => s.Status == SpotStatus.Available),
             JsonSerializer.Deserialize<object>(z.GeoJson, (JsonSerializerOptions?)null) ?? new { }
         ));
 
