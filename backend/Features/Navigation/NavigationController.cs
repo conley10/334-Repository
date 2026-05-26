@@ -1,3 +1,4 @@
+using System.Net.Http;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,12 @@ namespace SmartParking.Features.Navigation;
 public class NavigationController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly IHttpClientFactory _httpClientFactory;
 
-    public NavigationController(AppDbContext context)
+    public NavigationController(AppDbContext context, IHttpClientFactory httpClientFactory)
     {
         _context = context;
+        _httpClientFactory = httpClientFactory;
     }
 
     [HttpGet("navigation/route")]
@@ -31,6 +34,60 @@ public class NavigationController : ControllerBase
         var (destLat, destLng) = GetCentroid(zone.GeoJson);
         if (destLat == 0 && destLng == 0)
             return BadRequest(new { message = "Zone GeoJSON is invalid or missing coordinates." });
+
+        // Try calling OpenStreetMap OSRM Routing API
+        try
+        {
+            var client = _httpClientFactory.CreateClient();
+            client.Timeout = TimeSpan.FromSeconds(5);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("SmartParking/1.0");
+
+            var url = $"http://router.project-osrm.org/route/v1/driving/{originLng:F6},{originLat:F6};{destLng:F6},{destLat:F6}?overview=full&geometries=geojson";
+            var response = await client.GetAsync(url);
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(content);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("code", out var codeProp) && codeProp.GetString() == "Ok")
+                {
+                    if (root.TryGetProperty("routes", out var routesProp) && routesProp.ValueKind == JsonValueKind.Array && routesProp.GetArrayLength() > 0)
+                    {
+                        var firstRoute = routesProp[0];
+                        var distance = firstRoute.GetProperty("distance").GetDouble();
+                        var duration = firstRoute.GetProperty("duration").GetDouble();
+                        
+                        if (firstRoute.TryGetProperty("geometry", out var geometry) && 
+                            geometry.TryGetProperty("coordinates", out var coords) && 
+                            coords.ValueKind == JsonValueKind.Array)
+                        {
+                            var points = new System.Collections.Generic.List<string>();
+                            foreach (var coord in coords.EnumerateArray())
+                            {
+                                if (coord.GetArrayLength() == 2)
+                                {
+                                    var lng = coord[0].GetDouble();
+                                    var lat = coord[1].GetDouble();
+                                    points.Add($"{lat:F6},{lng:F6}");
+                                }
+                            }
+                            
+                            if (points.Count > 0)
+                            {
+                                var polylineStr = string.Join(";", points);
+                                var distanceM = (int)Math.Round(distance);
+                                var durationMins = Math.Max(1, (int)Math.Ceiling(duration / 60.0));
+                                return Ok(new RouteDto(distanceM, durationMins, polylineStr));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Fall back gracefully to Haversine straight line route calculation below if external service fails/times out
+        }
 
         var distanceKm = HaversineDistanceKm(originLat, originLng, destLat, destLng);
         var distanceMeters = (int)Math.Round(distanceKm * 1000);
