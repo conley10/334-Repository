@@ -91,10 +91,10 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
   }
 
   void _showUserDetail(AdminUser user) {
-    showDialog(
+    showDialog<bool>(
       context: context,
       builder: (_) => _UserDetailDialog(user: user, onToggleStatus: () { Navigator.pop(context); _toggleStatus(user); }),
-    );
+    ).then((roleChanged) { if (roleChanged == true) _load(); });
   }
 
   @override
@@ -334,10 +334,47 @@ class _UserRow extends StatelessWidget {
   }
 }
 
-class _UserDetailDialog extends StatelessWidget {
+class _UserDetailDialog extends StatefulWidget {
   const _UserDetailDialog({required this.user, required this.onToggleStatus});
   final AdminUser user;
   final VoidCallback onToggleStatus;
+
+  @override
+  State<_UserDetailDialog> createState() => _UserDetailDialogState();
+}
+
+class _UserDetailDialogState extends State<_UserDetailDialog> {
+  late UserRole _selectedRole;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedRole = widget.user.role;
+  }
+
+  String _roleLabel(UserRole r) {
+    switch (r) {
+      case UserRole.student: return 'Student';
+      case UserRole.staff:   return 'Staff';
+      case UserRole.faculty: return 'Faculty';
+      case UserRole.admin:   return 'Admin';
+    }
+  }
+
+  Future<void> _saveRole(UserRole newRole) async {
+    if (widget.user.userID == null) return;
+    setState(() => _saving = true);
+    try {
+      await AdminUserService().updateUserRole(widget.user.userID!, newRole);
+      if (!mounted) return;
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -351,30 +388,54 @@ class _UserDetailDialog extends StatelessWidget {
               Container(
                 width: 56, height: 56,
                 decoration: const BoxDecoration(color: Color(0xFF0D2E9B), shape: BoxShape.circle),
-                child: Center(child: Text(user.initials, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700))),
+                child: Center(child: Text(widget.user.initials, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700))),
               ),
               const SizedBox(width: 16),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                Text(widget.user.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(user.email, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
+                Text(widget.user.email, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
               ])),
             ]),
             const SizedBox(height: 24),
-            _DetailRow(label: 'User ID', value: '#${user.userID ?? '-'}'),
-            _DetailRow(label: 'Role', value: user.roleLabel),
-            _DetailRow(label: 'Status', value: user.statusLabel),
-            _DetailRow(label: 'Total Bookings', value: '${user.totalBookings}'),
-            _DetailRow(label: 'Joined', value: user.joinedText),
+            _DetailRow(label: 'User ID', value: '#${widget.user.userID ?? '-'}'),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(children: [
+                const SizedBox(width: 120, child: Text('Role', style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)))),
+                DropdownButtonHideUnderline(
+                  child: DropdownButton<UserRole>(
+                    value: _selectedRole,
+                    isDense: true,
+                    icon: const Icon(Icons.keyboard_arrow_down, size: 18, color: Color(0xFF6B7280)),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF1A1D24)),
+                    items: UserRole.values.map((r) => DropdownMenuItem(value: r, child: Text(_roleLabel(r)))).toList(),
+                    onChanged: _saving ? null : (v) {
+                      if (v != null && v != _selectedRole) {
+                        setState(() => _selectedRole = v);
+                        _saveRole(v);
+                      }
+                    },
+                  ),
+                ),
+                if (_saving) ...[
+                  const SizedBox(width: 8),
+                  const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2)),
+                ],
+              ]),
+            ),
+            _DetailRow(label: 'Status', value: widget.user.statusLabel),
+            _DetailRow(label: 'Total Bookings', value: '${widget.user.totalBookings}'),
+            _DetailRow(label: 'Joined', value: widget.user.joinedText),
             const SizedBox(height: 24),
             Row(mainAxisAlignment: MainAxisAlignment.end, children: [
               TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
               const SizedBox(width: 8),
               FilledButton.icon(
-                onPressed: onToggleStatus,
-                icon: Icon(user.status == UserStatus.active ? Icons.block : Icons.check_circle_outline, size: 18),
-                label: Text(user.status == UserStatus.active ? 'Suspend User' : 'Activate User'),
-                style: FilledButton.styleFrom(backgroundColor: user.status == UserStatus.active ? const Color(0xFFDC2626) : const Color(0xFF059669)),
+                onPressed: widget.onToggleStatus,
+                icon: Icon(widget.user.status == UserStatus.active ? Icons.block : Icons.check_circle_outline, size: 18),
+                label: Text(widget.user.status == UserStatus.active ? 'Suspend User' : 'Activate User'),
+                style: FilledButton.styleFrom(backgroundColor: widget.user.status == UserStatus.active ? const Color(0xFFDC2626) : const Color(0xFF059669)),
               ),
             ]),
           ]),
