@@ -4,5 +4,8 @@ public record UserDto(
     int UserID,
     string Name,
     string Email,
-    string Role
+    string Role,
+    string Status,
+    DateTime JoinedAt,
+    int TotalBookings
 );

@@ -12,5 +12,6 @@ public class ZoneConfiguration : IEntityTypeConfiguration<Zone>
         builder.Property(z => z.Name).HasMaxLength(50).IsRequired();
         builder.Property(z => z.AccessLevel).HasConversion<string>();
         builder.Property(z => z.ZoneType).HasConversion<string>();
+        builder.Property(z => z.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
     }
 }

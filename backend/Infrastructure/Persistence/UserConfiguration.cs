@@ -14,5 +14,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Email).IsUnique();
 
         builder.Property(u => u.Role).HasConversion<string>();
+        builder.Property(u => u.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
+        builder.Property(u => u.JoinedAt).IsRequired();
     }
 }

@@ -20,12 +20,17 @@ public class AdminService
 
     public async Task<List<User>> GetAllUsersAsync()
     {
-        return await _db.Users.AsNoTracking().ToListAsync();
+        return await _db.Users
+            .Include(u => u.Bookings)
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<User?> GetUserByIdAsync(int id)
     {
-        return await _db.Users.FindAsync(id);
+        return await _db.Users
+            .Include(u => u.Bookings)
+            .FirstOrDefaultAsync(u => u.UserID == id);
     }
 
     public async Task UpdateUserAsync(User user)
@@ -39,6 +44,7 @@ public class AdminService
     public async Task<List<Zone>> GetAllZonesAsync()
     {
         return await _db.Zones
+            .Include(z => z.Spots)
             .AsNoTracking()
             .ToListAsync();
     }
