@@ -39,11 +39,13 @@ class ZoneService {
       name: dto['name'] as String? ?? '',
       type: _backendToFlutterType(zoneType, accessLevel),
       totalSpots: dto['capacity'] as int? ?? 0,
-      // TODO(backend): ZoneDto doesn't expose availableSpots — defaulting to capacity until backend adds it
-      availableSpots: dto['capacity'] as int? ?? 0,
+      availableSpots: (dto['availableSpots'] as num?)?.toInt() ?? 0,
       hourlyRate: (dto['pricePerHour'] as num? ?? 0).toDouble(),
-      // TODO(backend): ZoneDto doesn't expose status — defaulting to active
-      status: ZoneStatus.active,
+      status: switch ((dto['status'] as String? ?? '').toLowerCase()) {
+        'maintenance' => ZoneStatus.maintenance,
+        'closed'      => ZoneStatus.closed,
+        _             => ZoneStatus.active,
+      },
     );
   }
 

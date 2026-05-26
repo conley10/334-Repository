@@ -20,12 +20,13 @@ class AdminUserService {
       name: dto['name'] as String? ?? '',
       email: dto['email'] as String? ?? '',
       role: role,
-      // TODO(backend): UserDto doesn't expose status — defaulting to active
-      status: UserStatus.active,
-      // TODO(backend): UserDto doesn't expose joinedAt — using current timestamp as placeholder
-      joinedAt: DateTime.now(),
-      // TODO(backend): UserDto doesn't expose totalBookings — defaulting to 0
-      totalBookings: 0,
+      status: switch ((dto['status'] as String? ?? '').toLowerCase()) {
+        'suspended' => UserStatus.suspended,
+        'pending'   => UserStatus.pending,
+        _           => UserStatus.active,
+      },
+      joinedAt: DateTime.tryParse(dto['joinedAt'] as String? ?? '') ?? DateTime.now(),
+      totalBookings: (dto['totalBookings'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -56,7 +57,6 @@ class AdminUserService {
 
   Future<void> updateUserStatus(int userID, UserStatus status) async {
     if (!useRealApi) { await Future.delayed(const Duration(milliseconds: 400)); return; }
-    // TODO(backend): no PATCH /admin/users/{id}/status endpoint exists yet
-    throw ApiException(501, 'Suspend/activate is not yet supported by the backend. The PATCH /admin/users/{id}/status endpoint needs to be added.');
+    await _apiClient.patch('/admin/users/$userID/status', body: {'status': status.name}, authenticated: false);
   }
 }
