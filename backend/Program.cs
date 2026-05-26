@@ -35,6 +35,7 @@ builder.Services.AddScoped<ViolationService>();
 
 // -------------------- AUTH & HTTP CLIENTS --------------------
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<MicrosoftOAuthTokenService>();
 
 // -------------------- CORS (DEV ONLY) --------------------

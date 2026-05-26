@@ -32,14 +32,17 @@ public class AdminController : ControllerBase
             u.UserID,
             u.Name,
             u.Email,
-            u.Role.ToString().ToLower()
+            u.Role.ToString().ToLower(),
+            u.Status.ToString().ToLower(),
+            u.JoinedAt,
+            u.Bookings.Count
         ));
 
         return Ok(dtos);
     }
 
     [HttpPatch("admin/users/{userId}/role")]
-    public async Task<ActionResult<IEnumerable<UserDto>>> UpdateUserRole(int userId, [FromBody] UpdateRoleRequest request)
+    public async Task<ActionResult> UpdateUserRole(int userId, [FromBody] UpdateRoleRequest request)
     {
         var user = await _adminService.GetUserByIdAsync(userId);
         if (user == null)
@@ -51,12 +54,23 @@ public class AdminController : ControllerBase
         user.Role = parsedRole;
         await _adminService.UpdateUserAsync(user);
 
-        return Ok(new UserDto(
-            user.UserID,
-            user.Name,
-            user.Email,
-            user.Role.ToString().ToLower()
-        ));
+        return Ok();
+    }
+
+    [HttpPatch("admin/users/{userId}/status")]
+    public async Task<ActionResult> UpdateUserStatus(int userId, [FromBody] UpdateStatusRequest request)
+    {
+        var user = await _adminService.GetUserByIdAsync(userId);
+        if (user == null)
+            return NotFound(new { message = "User not found" });
+
+        if (!Enum.TryParse<UserStatus>(request.Status, true, out var parsedStatus))
+            return BadRequest(new { message = "Invalid status" });
+
+        user.Status = parsedStatus;
+        await _adminService.UpdateUserAsync(user);
+
+        return Ok();
     }
 
     // ---------------- ZONES ----------------
@@ -74,6 +88,8 @@ public class AdminController : ControllerBase
             z.MaxDuration,
             z.AccessLevel.ToString().ToLower(),
             z.ZoneType.ToString().ToLower(),
+            z.Status.ToString().ToLower(),
+            z.Spots.Count(s => s.Status == SpotStatus.Available),
             JsonSerializer.Deserialize<object>(z.GeoJson) ?? new { }
         ));
 
@@ -89,6 +105,10 @@ public class AdminController : ControllerBase
         if (!Enum.TryParse<AccessLevel>(request.AccessLevel, true, out var accessLevel))
             return BadRequest(new { message = "Invalid access level" });
 
+        var status = ZoneStatus.Active;
+        if (!string.IsNullOrEmpty(request.Status) && !Enum.TryParse<ZoneStatus>(request.Status, true, out status))
+            return BadRequest(new { message = "Invalid zone status" });
+
         var zone = new Zone
         {
             Name = request.Name,
@@ -97,7 +117,8 @@ public class AdminController : ControllerBase
             MaxDuration = request.MaxDuration,
             GeoJson = request.GeoJson,
             ZoneType = zoneType,
-            AccessLevel = accessLevel
+            AccessLevel = accessLevel,
+            Status = status
         };
 
         var created = await _adminService.CreateZoneAsync(zone);
@@ -110,6 +131,8 @@ public class AdminController : ControllerBase
             created.MaxDuration,
             created.AccessLevel.ToString().ToLower(),
             created.ZoneType.ToString().ToLower(),
+            created.Status.ToString().ToLower(),
+            0,
             JsonSerializer.Deserialize<object>(created.GeoJson) ?? new { }
         ));
     }
@@ -141,6 +164,10 @@ public class AdminController : ControllerBase
             Enum.TryParse<AccessLevel>(request.AccessLevel, true, out var parsedAccess))
             zone.AccessLevel = parsedAccess;
 
+        if (request.Status != null &&
+            Enum.TryParse<ZoneStatus>(request.Status, true, out var parsedStatus))
+            zone.Status = parsedStatus;
+
         await _adminService.UpdateZoneAsync(zone);
 
         return Ok(new ZoneDto(
@@ -151,6 +178,8 @@ public class AdminController : ControllerBase
             zone.MaxDuration,
             zone.AccessLevel.ToString().ToLower(),
             zone.ZoneType.ToString().ToLower(),
+            zone.Status.ToString().ToLower(),
+            zone.Spots.Count(s => s.Status == SpotStatus.Available),
             JsonSerializer.Deserialize<object>(zone.GeoJson) ?? new { }
         ));
     }
@@ -220,6 +249,11 @@ public class UpdateRoleRequest
     public string Role { get; set; } = "";
 }
 
+public class UpdateStatusRequest
+{
+    public string Status { get; set; } = "";
+}
+
 public class CreateZoneRequest
 {
     public string Name { get; set; } = "";
@@ -229,6 +263,7 @@ public class CreateZoneRequest
     public string AccessLevel { get; set; } = "";
     public string ZoneType { get; set; } = "";
     public string GeoJson { get; set; } = "";
+    public string? Status { get; set; }
 }
 
 public class UpdateZoneRequest
@@ -240,6 +275,7 @@ public class UpdateZoneRequest
     public string? AccessLevel { get; set; }
     public string? ZoneType { get; set; }
     public string? GeoJson { get; set; }
+    public string? Status { get; set; }
 }
 
 public class OverrideSpotStatusRequest
