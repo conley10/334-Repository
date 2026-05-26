@@ -24,6 +24,8 @@ public static class DbInitializer
             Name = "Admin User 1",
             Email = "admin1@campus.edu",
             Role = UserRole.Admin,
+            Status = UserStatus.Active,
+            JoinedAt = DateTime.UtcNow.AddDays(-180),
         });
 
         // User 2: John Student (ID = 2)
@@ -32,6 +34,8 @@ public static class DbInitializer
             Name = "John Student",
             Email = "john@student.edu",
             Role = UserRole.Student,
+            Status = UserStatus.Active,
+            JoinedAt = DateTime.UtcNow.AddDays(-90),
         });
 
         // User 3: Admin User 2 (ID = 3)
@@ -40,6 +44,8 @@ public static class DbInitializer
             Name = "Admin User 2",
             Email = "admin2@campus.edu",
             Role = UserRole.Admin,
+            Status = UserStatus.Active,
+            JoinedAt = DateTime.UtcNow.AddDays(-120),
         });
 
         // User 4: Admin User 3 (ID = 4)
@@ -48,6 +54,8 @@ public static class DbInitializer
             Name = "Admin User 3",
             Email = "admin3@campus.edu",
             Role = UserRole.Admin,
+            Status = UserStatus.Active,
+            JoinedAt = DateTime.UtcNow.AddDays(-150),
         });
 
         // 39 other Students
@@ -58,6 +66,8 @@ public static class DbInitializer
                 Name = $"Student User {i}",
                 Email = $"student{i}@student.edu",
                 Role = UserRole.Student,
+                Status = UserStatus.Active,
+                JoinedAt = DateTime.UtcNow.AddDays(-random.Next(30, 365)),
             });
         }
 
@@ -69,6 +79,8 @@ public static class DbInitializer
                 Name = $"Staff User {i}",
                 Email = $"staff{i}@staff.edu",
                 Role = UserRole.Staff,
+                Status = UserStatus.Active,
+                JoinedAt = DateTime.UtcNow.AddDays(-random.Next(30, 365)),
             });
         }
 
@@ -80,6 +92,8 @@ public static class DbInitializer
                 Name = $"Visitor User {i}",
                 Email = $"visitor{i}@visitor.edu",
                 Role = UserRole.Visitor,
+                Status = UserStatus.Active,
+                JoinedAt = DateTime.UtcNow.AddDays(-random.Next(30, 365)),
             });
         }
 
@@ -95,6 +109,7 @@ public static class DbInitializer
             MaxDuration = 10,
             AccessLevel = AccessLevel.Staff,
             ZoneType = ZoneType.EV,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.878005, -34.407659], [150.878604, -34.407742], [150.878655, -34.407442], [150.878059, -34.407365], [150.878005, -34.407659]]]}",
         };
@@ -107,6 +122,7 @@ public static class DbInitializer
             MaxDuration = 8,
             AccessLevel = AccessLevel.Student,
             ZoneType = ZoneType.Regular,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.877957, -34.406783], [150.87777, -34.406763], [150.877662, -34.406753], [150.877337, -34.406712], [150.877269, -34.406706], [150.87721, -34.40702], [150.877553, -34.407328], [150.877739, -34.407468], [150.877838, -34.407515], [150.877957, -34.406783]]]}",
         };
@@ -119,6 +135,7 @@ public static class DbInitializer
             MaxDuration = 6,
             AccessLevel = AccessLevel.Student,
             ZoneType = ZoneType.Regular,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.873886, -34.405726], [150.87456, -34.405811], [150.874802, -34.405909], [150.875027, -34.406037], [150.875181, -34.406153], [150.874541, -34.406548], [150.873728, -34.406428], [150.873792, -34.406118], [150.873819, -34.405992], [150.873886, -34.405726]]]}",
         };
@@ -131,6 +148,7 @@ public static class DbInitializer
             MaxDuration = 8,
             AccessLevel = AccessLevel.Student,
             ZoneType = ZoneType.Regular,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.873009, -34.40328], [150.87482, -34.403497], [150.874747, -34.40396], [150.874714, -34.404199], [150.874446, -34.404172], [150.874371, -34.404695], [150.874092, -34.404659], [150.874081, -34.404482], [150.87317, -34.404367], [150.872944, -34.403969], [150.872955, -34.403721], [150.873009, -34.40328]]]}",
         };
@@ -143,6 +161,7 @@ public static class DbInitializer
             MaxDuration = 4,
             AccessLevel = AccessLevel.Student,
             ZoneType = ZoneType.Regular,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.877518, -34.401721], [150.878, -34.401778], [150.877873, -34.402447], [150.878385, -34.402526], [150.878736, -34.402796], [150.878545, -34.403856], [150.877633, -34.40373], [150.87637, -34.403598], [150.876452, -34.403477], [150.876645, -34.403502], [150.876704, -34.403404], [150.877027, -34.403343], [150.877221, -34.403332], [150.877251, -34.403051], [150.877486, -34.401833], [150.877518, -34.401721]]]}",
         };
@@ -155,6 +174,7 @@ public static class DbInitializer
             MaxDuration = 2,
             AccessLevel = AccessLevel.Visitor,
             ZoneType = ZoneType.EV,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.879537, -34.403047], [150.879453, -34.403531], [150.880248, -34.403613], [150.880324, -34.403142], [150.879537, -34.403047]]]}",
         };
@@ -167,6 +187,7 @@ public static class DbInitializer
             MaxDuration = 4,
             AccessLevel = AccessLevel.Student,
             ZoneType = ZoneType.EV,
+            Status = ZoneStatus.Active,
             GeoJson =
                 "{\"type\": \"Polygon\", \"coordinates\": [[[150.880614, -34.407523], [150.881725, -34.407642], [150.881687, -34.407979], [150.881641, -34.408267], [150.880452, -34.408132], [150.880494, -34.407851], [150.880509, -34.407849], [150.880529, -34.407762], [150.880578, -34.407721], [150.880614, -34.407523]]]}",
         };
