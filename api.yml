@@ -569,6 +569,34 @@ paths:
         "404":
           $ref: "#/components/responses/NotFound"
 
+  /admin/users/{userId}/status:
+    parameters:
+      - $ref: "#/components/parameters/UserIdParam"
+    patch:
+      tags:
+        - Admin
+      summary: Suspend or reactivate a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [active, suspended, pending]
+      responses:
+        "200":
+          description: Status updated
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /admin/zones:
     post:
       tags:
@@ -795,6 +823,14 @@ components:
         role:
           type: string
           enum: [student, staff, visitor, admin]
+        status:
+          type: string
+          enum: [active, suspended, pending]
+        joinedAt:
+          type: string
+          format: date-time
+        totalBookings:
+          type: integer
 
     UserProfileUpdate:
       type: object
@@ -871,6 +907,12 @@ components:
         zoneType:
           type: string
           enum: [regular, EV, accessible]
+        status:
+          type: string
+          enum: [active, maintenance, closed]
+        availableSpots:
+          type: integer
+          description: Number of currently available (non-occupied, non-reserved) spots in this zone.
         geoJson:
           type: object
           description: Raw GeoJSON Polygon geometry for dashboard map rendering. Stripped of the Feature wrapper to prevent redundant data.
