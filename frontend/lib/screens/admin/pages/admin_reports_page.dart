@@ -125,19 +125,19 @@ class _AdminReportsPageState extends State<AdminReportsPage> {
 
   Widget _buildChartsRow() {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(flex: 2, child: _ChartCard(
+        Expanded(flex: 2, child: SizedBox(height: 320, child: _ChartCard(
           title: '$_selectedReportType Trend',
           subtitle: 'Daily totals for $_selectedRange',
           child: const _MockBarChart(),
-        )),
+        ))),
         const SizedBox(width: 16),
-        Expanded(flex: 1, child: _ChartCard(
+        Expanded(flex: 1, child: SizedBox(height: 320, child: _ChartCard(
           title: 'Booking Distribution',
           subtitle: 'By zone type',
           child: const _MockDonutLegend(),
-        )),
+        ))),
       ],
     );
   }
