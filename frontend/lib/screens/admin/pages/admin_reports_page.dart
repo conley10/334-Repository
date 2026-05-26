@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../models/admin/report_summary.dart';
+import '../../../services/admin/reports_service.dart';
 import '../widgets/admin_page_header.dart';
 
 class AdminReportsPage extends StatefulWidget {
@@ -9,11 +11,43 @@ class AdminReportsPage extends StatefulWidget {
 }
 
 class _AdminReportsPageState extends State<AdminReportsPage> {
+  final ReportsService _reportsService = ReportsService();
+  ReportSummary? _summary;
+  bool _isLoading = true;
+  String? _error;
+
   String _selectedRange = 'Last 30 days';
   String _selectedReportType = 'Revenue';
 
   final List<String> _ranges = const ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'This year'];
   final List<String> _reportTypes = const ['Revenue', 'Bookings', 'Occupancy', 'Violations'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReport();
+  }
+
+  Future<void> _loadReport() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final summary = await _reportsService.getReportSummary();
+      if (!mounted) return;
+      setState(() {
+        _summary = summary;
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +87,19 @@ class _AdminReportsPageState extends State<AdminReportsPage> {
         const SizedBox(height: 24),
         _buildFilters(),
         const SizedBox(height: 24),
-        _buildKpiRow(),
-        const SizedBox(height: 24),
-        _buildChartsRow(),
-        const SizedBox(height: 24),
-        _buildTopZones(),
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (_error != null)
+          _buildError()
+        else ...[
+          _buildKpiRow(),
+          const SizedBox(height: 24),
+          // TODO(backend): charts (Revenue Trend, Booking Distribution) still use mock data. Backend /admin/reports needs to expand ReportDto to include time-series data (matches the ReportData schema in api.yml).
+          _buildChartsRow(),
+          const SizedBox(height: 24),
+          // TODO(backend): Top Performing Zones still uses mock data. Backend needs a new endpoint or expanded /admin/reports.
+          _buildTopZones(),
+        ],
       ],
     );
   }
@@ -65,6 +107,23 @@ class _AdminReportsPageState extends State<AdminReportsPage> {
   void _showExportSnack(String format) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$format export started — you will receive an email when ready.')),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        const Icon(Icons.error_outline, size: 40, color: Color(0xFFDC2626)),
+        const SizedBox(height: 12),
+        Text(_error!, style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
+        const SizedBox(height: 12),
+        FilledButton.icon(
+          onPressed: _loadReport,
+          icon: const Icon(Icons.refresh, size: 16),
+          label: const Text('Retry'),
+          style: FilledButton.styleFrom(backgroundColor: const Color(0xFF0D2E9B)),
+        ),
+      ]),
     );
   }
 
@@ -112,13 +171,13 @@ class _AdminReportsPageState extends State<AdminReportsPage> {
   Widget _buildKpiRow() {
     return Row(
       children: [
-        Expanded(child: _ReportKpi(title: 'TOTAL REVENUE', value: '\$284,520', change: '+12.4% vs last period', positive: true, icon: Icons.payments_outlined)),
+        Expanded(child: _ReportKpi(title: 'TOTAL USERS', value: '${_summary?.totalUsers ?? 0}', change: 'Registered accounts', positive: true, icon: Icons.people_outline)),
         const SizedBox(width: 16),
-        Expanded(child: _ReportKpi(title: 'TOTAL BOOKINGS', value: '8,742', change: '+8.1% vs last period', positive: true, icon: Icons.event_available_outlined)),
+        Expanded(child: _ReportKpi(title: 'TOTAL ZONES', value: '${_summary?.totalZones ?? 0}', change: 'Parking zones configured', positive: true, icon: Icons.location_on_outlined)),
         const SizedBox(width: 16),
-        Expanded(child: _ReportKpi(title: 'AVG DURATION', value: '3.2 hrs', change: '-0.4 hrs vs last period', positive: false, icon: Icons.timer_outlined)),
+        Expanded(child: _ReportKpi(title: 'TOTAL SPOTS', value: '${_summary?.totalSpots ?? 0}', change: 'Across all zones', positive: true, icon: Icons.local_parking_outlined)),
         const SizedBox(width: 16),
-        Expanded(child: _ReportKpi(title: 'AVG OCCUPANCY', value: '76%', change: '+5.2% vs last period', positive: true, icon: Icons.local_parking_outlined)),
+        Expanded(child: _ReportKpi(title: 'TOTAL VIOLATIONS', value: '${_summary?.totalViolations ?? 0}', change: 'Reported incidents', positive: false, icon: Icons.warning_amber_outlined)),
       ],
     );
   }
