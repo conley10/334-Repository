@@ -4,7 +4,30 @@ import '../../models/admin/admin_user.dart';
 class AdminUserService {
   AdminUserService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
   final ApiClient _apiClient;
-  static const bool useRealApi = false;
+  static const bool useRealApi = true;
+
+  AdminUser _userFromDto(Map<String, dynamic> dto) {
+    UserRole role;
+    switch ((dto['role'] as String? ?? '').toLowerCase()) {
+      case 'student': role = UserRole.student; break;
+      case 'staff': role = UserRole.staff; break;
+      case 'faculty': role = UserRole.faculty; break;
+      case 'admin': role = UserRole.admin; break;
+      default: role = UserRole.student;
+    }
+    return AdminUser(
+      userID: dto['userID'] as int?,
+      name: dto['name'] as String? ?? '',
+      email: dto['email'] as String? ?? '',
+      role: role,
+      // TODO(backend): UserDto doesn't expose status — defaulting to active
+      status: UserStatus.active,
+      // TODO(backend): UserDto doesn't expose joinedAt — using current timestamp as placeholder
+      joinedAt: DateTime.now(),
+      // TODO(backend): UserDto doesn't expose totalBookings — defaulting to 0
+      totalBookings: 0,
+    );
+  }
 
   Future<List<AdminUser>> getUsers() async {
     if (!useRealApi) {
@@ -21,13 +44,19 @@ class AdminUserService {
         AdminUser(userID: 10, name: 'Ava Martinez', email: 'a.martinez@campus.edu', role: UserRole.faculty, status: UserStatus.suspended, joinedAt: DateTime(2022, 12, 8), totalBookings: 98),
       ];
     }
-    final response = await _apiClient.get('/admin/users');
-    if (response is List) return response.map((e) => AdminUser.fromJson(e)).toList();
+    final response = await _apiClient.get('/admin/users', authenticated: false);
+    if (response is List) return response.map((e) => _userFromDto(e as Map<String, dynamic>)).toList();
     return <AdminUser>[];
+  }
+
+  Future<void> updateUserRole(int userID, UserRole newRole) async {
+    if (!useRealApi) { await Future.delayed(const Duration(milliseconds: 400)); return; }
+    await _apiClient.patch('/admin/users/$userID/role', body: {'role': newRole.name}, authenticated: false);
   }
 
   Future<void> updateUserStatus(int userID, UserStatus status) async {
     if (!useRealApi) { await Future.delayed(const Duration(milliseconds: 400)); return; }
-    await _apiClient.patch('/admin/users/$userID', body: {'status': status.name});
+    // TODO(backend): no PATCH /admin/users/{id}/status endpoint exists yet
+    throw ApiException(501, 'Suspend/activate is not yet supported by the backend. The PATCH /admin/users/{id}/status endpoint needs to be added.');
   }
 }
