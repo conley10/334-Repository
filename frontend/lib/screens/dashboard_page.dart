@@ -3,6 +3,7 @@ import 'bookings_page.dart';
 import 'profile_page.dart';
 import 'payment_methods_page.dart';
 import 'app_state.dart';
+import 'notification_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -27,7 +28,7 @@ class DashboardPage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         CircleAvatar(
                           radius: 24,
@@ -62,10 +63,20 @@ class DashboardPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        Icon(
-                          Icons.notifications_none,
-                          size: 28,
-                          color: Colors.black87,
+                        IconButton(
+                          icon: const Icon(
+                            Icons.notifications_none,
+                            size: 28,
+                            color: Colors.black87,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const NotificationsPage(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
