@@ -1,3 +1,9 @@
+import 'package:flutter/material.dart';
+
+class AppState {
+  static final List<Booking> paidBookings = [];
+}
+
 class Booking {
   final int? bookingID;
   final String zone;
@@ -7,6 +13,9 @@ class Booking {
   final String paymentMethod;
   final DateTime paidAt;
 
+  final DateTime? startTime;
+  final DateTime? endTime;
+
   const Booking({
     this.bookingID,
     required this.zone,
@@ -15,42 +24,45 @@ class Booking {
     required this.rate,
     required this.paymentMethod,
     required this.paidAt,
+    this.startTime,
+    this.endTime,
   });
 
   double get total => hours * rate;
 
   String get totalText => '\$${total.toStringAsFixed(2)}';
 
-  String get durationText => "$hours ${hours == 1 ? 'hour' : 'hours'}";
+  String get durationText => '$hours ${hours == 1 ? 'hour' : 'hours'}';
 
-  String get dateText => 'Today';
+  DateTime get bookingStart => startTime ?? paidAt;
+
+  DateTime get bookingEnd =>
+      endTime ?? bookingStart.add(Duration(hours: hours));
+
+  String get dateText {
+    final now = DateTime.now();
+
+    if (bookingStart.year == now.year &&
+        bookingStart.month == now.month &&
+        bookingStart.day == now.day) {
+      return 'Today';
+    }
+
+    return '${bookingStart.day}/${bookingStart.month}/${bookingStart.year}';
+  }
 
   String get timeText {
-    final end = paidAt.add(Duration(hours: hours));
-    return '${_formatTime(paidAt)} - ${_formatTime(end)}';
+    final start = TimeOfDay.fromDateTime(bookingStart);
+    final end = TimeOfDay.fromDateTime(bookingEnd);
+
+    return '${_formatTime(start)} - ${_formatTime(end)}';
   }
 
-  static String _formatTime(DateTime value) {
-    final hour12 = value.hour == 0 ? 12 : (value.hour > 12 ? value.hour - 12 : value.hour);
-    final minute = value.minute.toString().padLeft(2, '0');
-    final suffix = value.hour >= 12 ? 'PM' : 'AM';
-    return '$hour12:$minute $suffix';
-  }
-}
+  static String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
 
-class AppState {
-  static final List<Booking> paidBookings = <Booking>[
-    Booking(
-      zone: 'Zone A',
-      vehicle: 'ABC 123',
-      hours: 2,
-      rate: 4.50,
-      paymentMethod: 'Visa •••• 4242',
-      paidAt: DateTime(2026, 4, 30, 9),
-    ),
-  ];
-
-  static void addPaidBooking(Booking booking) {
-    paidBookings.insert(0, booking);
+    return '$hour:$minute $period';
   }
 }

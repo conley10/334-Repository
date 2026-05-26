@@ -98,16 +98,18 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
                       MaterialPageRoute(
                         builder: (context) => PaymentPage(
                           booking: Booking(
-                            bookingID: widget.booking.bookingID,
-                            zone: widget.booking.zone,
-                            vehicle: widget.booking.vehicle,
-                            hours: widget.booking.hours,
-                            rate: widget.booking.rate,
-                            paymentMethod: selectedMethod,
-                            paidAt: DateTime.now(),
+                              bookingID: widget.booking.bookingID,
+                              zone: widget.booking.zone,
+                              vehicle: widget.booking.vehicle,
+                              hours: widget.booking.hours,
+                              rate: widget.booking.rate,
+                              paymentMethod: selectedMethod,
+                              paidAt: DateTime.now(),
+                              startTime: widget.booking.startTime,
+                              endTime: widget.booking.endTime,
+                            ),
                           ),
                         ),
-                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(

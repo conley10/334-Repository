@@ -48,13 +48,14 @@ class PaymentService {
     }
 
     final response = await _apiClient.post(
-      '/payments',
-      body: {
-        'bookingID': bookingID,
-        'method': method,
-        'amount': amount,
-      },
-    );
+  '/payments',
+  authenticated: false,
+  body: {
+    'bookingID': bookingID,
+    'method': method,
+    'amount': amount,
+  },
+);
 
     return response as Map<String, dynamic>;
   }

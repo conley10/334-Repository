@@ -1,46 +1,39 @@
-import 'api_client.dart';
 import '../models/vehicle.dart';
+import 'api_client.dart';
 
 class VehicleService {
-  VehicleService({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  VehicleService({ApiClient? apiClient})
+      : _apiClient = apiClient ?? ApiClient();
 
   final ApiClient _apiClient;
 
-  static const bool useRealApi = true;
+    Future<List<Vehicle>> getVehicles() async {
+      final response = await _apiClient.get(
+        '/vehicles',
+        authenticated: false,
+      );
 
-  Future<List<Vehicle>> getVehicles() async {
-    // DEMO MODE until backend exists
-    return [
-      const Vehicle(
-        vehicleID: 1,
-        licensePlate: 'ABC123',
-        userID: 1,
-      ),
-      const Vehicle(
-        vehicleID: 2,
-        licensePlate: 'XYZ789',
-        userID: 1,
-      ),
-    ];
+      if (response is List) {
+        return response
+            .map((item) => Vehicle.fromJson(item as Map<String, dynamic>))
+            .where((vehicle) => vehicle.userID == 2)
+            .toList();
+      }
 
-    /*
-    // REAL API MODE later
-    final response = await _apiClient.get('/vehicles');
-
-    if (response is List) {
-      return response
-          .map((item) => Vehicle.fromJson(item as Map<String, dynamic>))
-          .toList();
+      return <Vehicle>[];
     }
 
-    return <Vehicle>[];
-    */
-  }
-
-  Future<void> registerVehicle({required String licensePlate}) async {
-    await _apiClient.post(
+  Future<Vehicle> createVehicle({
+    required String licensePlate,
+  }) async {
+    final response = await _apiClient.post(
       '/vehicles',
-      body: {'licensePlate': licensePlate},
+      authenticated: false,
+      body: {
+        'licensePlate': licensePlate,
+      },
     );
+
+    return Vehicle.fromJson(response as Map<String, dynamic>);
   }
 }
