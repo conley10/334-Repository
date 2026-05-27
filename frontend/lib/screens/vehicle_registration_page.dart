@@ -44,7 +44,7 @@ class _VehicleRegistrationPageState extends State<VehicleRegistrationPage> {
 
     try {
       if (useRealApi) {
-        await _vehicleService.registerVehicle(licensePlate: plate);
+        await _vehicleService.createVehicle(licensePlate: plate);
       } else {
         await Future.delayed(const Duration(milliseconds: 600));
       }

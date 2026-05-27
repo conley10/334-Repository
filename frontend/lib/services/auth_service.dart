@@ -5,32 +5,33 @@ class AuthService {
 
   final ApiClient _apiClient;
 
-  Future<String> exchangeToken({
-    required String provider,
+  Future<void> exchangeMicrosoftCode({
     required String code,
     required String codeVerifier,
+    required String redirectUri,
   }) async {
     final response = await _apiClient.post(
       '/auth/token',
       authenticated: false,
       body: {
-        'provider': provider,
+        'provider': 'microsoft',
         'code': code,
         'codeVerifier': codeVerifier,
+        'redirectUri': redirectUri,
       },
     );
 
     if (response is! Map<String, dynamic>) {
-      throw ApiException(500, 'Unexpected auth response from server.');
+      throw ApiException(500, 'Invalid auth response.');
     }
 
-    final accessToken = response['accessToken']?.toString();
-    if (accessToken == null || accessToken.isEmpty) {
-      throw ApiException(500, 'Auth response did not include accessToken.');
+    final token = response['accessToken']?.toString();
+
+    if (token == null || token.isEmpty) {
+      throw ApiException(500, 'No access token returned.');
     }
 
-    await _apiClient.saveToken(accessToken);
-    return accessToken;
+    await _apiClient.saveToken(token);
   }
 
   Future<void> logout() {

@@ -46,6 +46,8 @@ class _PaymentPageState extends State<PaymentPage> {
 
       if (!mounted) return;
 
+    AppState.paidBookings.add(widget.booking);
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Payment successful. Booking added to profile.'),

@@ -1,27 +1,31 @@
 class BookingModel {
-  final int? bookingID;
-  final String zone;
-  final String vehicle;
-  final int hours;
-  final double rate;
+  final int bookingID;
+  final DateTime startTime;
+  final DateTime endTime;
+  final int userID;
+  final int spotID;
+  final int vehicleID;
+  final String status;
 
   const BookingModel({
-    this.bookingID,
-    required this.zone,
-    required this.vehicle,
-    required this.hours,
-    required this.rate,
+    required this.bookingID,
+    required this.startTime,
+    required this.endTime,
+    required this.userID,
+    required this.spotID,
+    required this.vehicleID,
+    required this.status,
   });
-
-  double get total => hours * rate;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
-      bookingID: json['bookingID'] as int?,
-      zone: json['zone'] as String? ?? '',
-      vehicle: json['vehicle'] as String? ?? '',
-      hours: json['hours'] as int? ?? 1,
-      rate: (json['rate'] as num?)?.toDouble() ?? 4.5,
+      bookingID: json['bookingID'] as int,
+      startTime: DateTime.parse(json['startTime']),
+      endTime: DateTime.parse(json['endTime']),
+      userID: json['userID'] as int,
+      spotID: json['spotID'] as int,
+      vehicleID: json['vehicleID'] as int,
+      status: json['status'] as String? ?? 'upcoming',
     );
   }
 }

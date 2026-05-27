@@ -6,30 +6,12 @@ class BookingService {
 
   final ApiClient _apiClient;
 
-  static const bool useRealApi = false;
+  static const bool useRealApi = true;
 
   Future<List<BookingModel>> getBookings({String? status}) async {
-    if (!useRealApi) {
-      return [
-        const BookingModel(
-          bookingID: 1,
-          zone: 'Zone A',
-          vehicle: 'fdgjdfgk',
-          hours: 2,
-          rate: 4.5,
-        ),
-        const BookingModel(
-          bookingID: 2,
-          zone: 'Zone B',
-          vehicle: 'XYZ789',
-          hours: 3,
-          rate: 4.5,
-        ),
-      ];
-    }
-
     final response = await _apiClient.get(
       '/bookings',
+      authenticated: false,
       queryParameters: status == null ? null : {'status': status},
     );
 
@@ -42,25 +24,25 @@ class BookingService {
     return <BookingModel>[];
   }
 
-  Future<void> createBooking({
+  Future<BookingModel> createBooking({
     required DateTime startTime,
     required DateTime endTime,
+    required int userID,
     required int spotId,
     required int vehicleId,
   }) async {
-    if (!useRealApi) {
-      await Future.delayed(const Duration(milliseconds: 600));
-      return;
-    }
-
-    await _apiClient.post(
+    final response = await _apiClient.post(
       '/bookings',
+      authenticated: false,
       body: {
         'startTime': startTime.toUtc().toIso8601String(),
         'endTime': endTime.toUtc().toIso8601String(),
+        'userID': userID,
         'spotID': spotId,
         'vehicleID': vehicleId,
       },
     );
+
+    return BookingModel.fromJson(response as Map<String, dynamic>);
   }
 }
