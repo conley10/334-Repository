@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../auth/microsoft_oauth_web.dart';
+import '../auth/microsoft_oauth_stub.dart'
+    if (dart.library.html) '../auth/microsoft_oauth_web.dart';
 import '../services/auth_service.dart';
 import 'vehicle_registration_page.dart';
 
