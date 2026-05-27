@@ -4,6 +4,7 @@ import '../auth/microsoft_oauth_stub.dart'
     if (dart.library.html) '../auth/microsoft_oauth_web.dart';
 import '../services/auth_service.dart';
 import 'vehicle_registration_page.dart';
+import 'admin/admin_home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,6 +18,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isLoading = false;
   bool hasProcessedCode = false;
+  bool isAdminLogin = false;
 
   @override
   void initState() {
@@ -28,15 +30,11 @@ class _LoginPageState extends State<LoginPage> {
     if (hasProcessedCode) return;
 
     final code = MicrosoftOAuthWeb.getReturnedCode();
-
-    if (code == null || code.isEmpty) {
-      return;
-    }
+    if (code == null || code.isEmpty) return;
 
     hasProcessedCode = true;
 
     final verifier = MicrosoftOAuthWeb.getCodeVerifier();
-
     if (verifier == null || verifier.isEmpty) {
       _showError('Missing PKCE verifier.');
       return;
@@ -58,35 +56,34 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => const VehicleRegistrationPage(),
+          builder: (_) => MicrosoftOAuthWeb.getSavedLoginMode()
+    ? const AdminHomePage()
+    : const VehicleRegistrationPage(),
         ),
       );
     } catch (error) {
       _showError('Microsoft login failed: $error');
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   void _showError(String message) {
     if (!mounted) return;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
   void _startMicrosoftLogin() {
-    MicrosoftOAuthWeb.startLogin();
-  }
+  MicrosoftOAuthWeb.saveLoginMode(isAdminLogin);
+  MicrosoftOAuthWeb.startLogin();
+}
 
   @override
   Widget build(BuildContext context) {
     const primaryBlue = Color(0xFF0D2E9B);
     const lightBackground = Color(0xFFF7F7FA);
-    const cardBackground = Colors.white;
     const mutedText = Color(0xFF8B8E99);
 
     return Scaffold(
@@ -97,12 +94,9 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
               constraints: const BoxConstraints(maxWidth: 380),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 22,
-                vertical: 28,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
               decoration: BoxDecoration(
-                color: cardBackground,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -115,23 +109,18 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(height: 8),
-
                   Text(
                     'Welcome to\nCampusPark',
                     textAlign: TextAlign.center,
-                    style:
-                        Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: primaryBlue,
-                              fontWeight: FontWeight.w800,
-                              height: 1.25,
-                            ),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: primaryBlue,
+                          fontWeight: FontWeight.w800,
+                          height: 1.25,
+                        ),
                   ),
-
                   const SizedBox(height: 12),
-
                   const Text(
-                    'Access university parking services with your academic credentials.',
+                    'Choose driver or admin, then sign in with Microsoft.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: mutedText,
@@ -139,15 +128,39 @@ class _LoginPageState extends State<LoginPage> {
                       height: 1.5,
                     ),
                   ),
+                  const SizedBox(height: 24),
 
-                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Center(child: Text('Driver')),
+                          selected: !isAdminLogin,
+                          onSelected: (_) {
+                            setState(() => isAdminLogin = false);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Center(child: Text('Admin')),
+                          selected: isAdminLogin,
+                          onSelected: (_) {
+                            setState(() => isAdminLogin = true);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
 
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton.icon(
-                      onPressed:
-                          isLoading ? null : _startMicrosoftLogin,
+                      onPressed: isLoading ? null : _startMicrosoftLogin,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryBlue,
                         foregroundColor: Colors.white,
@@ -178,29 +191,25 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 26),
+                  const SizedBox(height: 18),
 
-                  const Text(
-                    'Secure Microsoft Azure authentication enabled.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
+                  Text(
+                    isAdminLogin
+                        ? 'Admin mode selected'
+                        : 'Driver mode selected',
+                    style: const TextStyle(
                       color: mutedText,
                       fontSize: 12,
                     ),
                   ),
 
                   const SizedBox(height: 18),
-
                   const Divider(),
-
                   const SizedBox(height: 14),
 
                   const Text(
                     '© 2024 CampusPark Systems.',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: mutedText,
-                    ),
+                    style: TextStyle(fontSize: 10, color: mutedText),
                   ),
                 ],
               ),

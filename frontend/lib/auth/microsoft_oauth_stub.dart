@@ -1,9 +1,10 @@
 class MicrosoftOAuthWeb {
-  static const redirectUri = 'http://localhost:8765/auth-callback';
+  static const redirectUri =
+      'http://localhost:8765/auth-callback';
 
   static void startLogin() {
     throw UnsupportedError(
-      'Microsoft login is only supported on Flutter web. Run with: flutter run -d chrome --web-port=8765',
+      'Microsoft login is only supported on Flutter web.',
     );
   }
 
@@ -16,4 +17,10 @@ class MicrosoftOAuthWeb {
   }
 
   static void clearCodeVerifier() {}
+
+  static void saveLoginMode(bool isAdmin) {}
+
+  static bool getSavedLoginMode() {
+    return false;
+  }
 }
