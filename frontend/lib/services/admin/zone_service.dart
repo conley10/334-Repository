@@ -51,6 +51,11 @@ class ZoneService {
 
   Map<String, dynamic> _zoneToRequestBody(ParkingZone zone, {bool isCreate = false}) {
     final typeFields = _flutterTypeToBackend(zone.type);
+    final statusStr = switch (zone.status) {
+      ZoneStatus.active => 'active',
+      ZoneStatus.maintenance => 'maintenance',
+      ZoneStatus.closed => 'closed',
+    };
     return {
       'name': zone.name,
       'capacity': zone.totalSpots,
@@ -59,6 +64,7 @@ class ZoneService {
       'accessLevel': typeFields['accessLevel'],
       'zoneType': typeFields['zoneType'],
       'geoJson': '{}', // TODO(backend): hardcoded placeholder — frontend doesn't capture geometry yet
+      'status': statusStr,
     };
   }
 
